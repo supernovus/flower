@@ -1,0 +1,54 @@
+=== Flower -- Petal for Perl 6
+
+Petal is the Perl Template Attribute Language (Perl 5), and is derived from the 
+TAL, METAL and TALES specifications from Zope (Python).
+
+Flower is an implementation of Petal in Perl 6.
+
+It's not the same as the Perl 5 implementation, and has a different
+feature-set and parsing model.
+
+That said, it tries to implement as much of Petal as possible in a mostly
+compatible form, major differences are listed below.
+
+= Requirements:
+
+ - Exemel, the XML library that powers Flower.
+
+= Optional libraries:
+
+ - Temporal-Utils, needed if you want to use Flower::Utils::Date
+
+= Major Differences from Petal:
+
+ * Flower can use template strings instead of requiring files.
+ * Flower does not support the multiple template files based on language.
+   It will have an I18N framework similar to Petal::I18N (not on first release.)
+ * Adding custom modifiers is completely different in Flower.
+ * There is NO support for anything but well-formed XML.
+   There is no equivelant to the Petal::Parser::HTB, and no plans for one.
+   Use well-formed XML, it's just better.
+
+The above list will be updated as this project is developed, as I'm sure
+other changes will be introduced that be a gotchya for Petal users.
+
+= Flower::Utils
+
+Inspired by Petal::Utils, Flower includes a namespace called Flower::Utils::
+If you load modules in the Petal::Utisl:: namespace, it will add additional
+modifiers. The following sets are planned for inclusion:
+
+  - Text, same as the :text set from Petal::Utils
+  - Logic, same as the :logic set from Petal::Utils
+  - List, same as the :list set from Petal::Utils
+  - Hash, same as the :hash set from Petal::Utils
+  - Date, similar to the :date set from Petal::Utils, using on DateTime::Utils
+    Not exactly the same, it offers strftime:, iso: and rfc: and works on
+    DateTime and Date objects in addition to epoch timestamps.
+
+URI is not included, and neither is debug, but that's okay, because dump:
+is built into Flower (it does a .perl on the object.) I'm sure new exciting
+libraries will be made adding onto these.
+
+= Author: Timothy Totten
+= License: Artistic License 2.0
