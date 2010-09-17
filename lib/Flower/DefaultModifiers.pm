@@ -22,6 +22,9 @@ our sub false ($parent, $query) {
 }
 
 our sub string ($parent, $query) {
-  return $query;
+  my $string = $query;
+#  $string ~~ s:g/ '${' (.*?) '}' / $parent.query($0) /; # NYI in rakudo.
+  $string.=subst(:g, rx/'${' (.*?) '}'/, -> $/ { $parent.query($0) });
+  return $string;
 }
 

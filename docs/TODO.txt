@@ -1,0 +1,8 @@
+Short Term
+ - Implement METAL support.
+ - Implement query caching.
+
+Long Term
+ - Implement I18N support.
+ - Implement on-error.
+

@@ -99,15 +99,7 @@ method !parse-elements ($xml is rw) {
     if $i == $xml.nodes.elems { last; }
     my $element = $xml.nodes[$i];
     if $element !~~ Exemel::Element { next; } # skip non-elements.
-    for @!petal-tags -> $petal {
-      my $tag = $!petal~':'~$petal;
-      self!parse-tag($element, $tag, $petal);
-      if $element !~~ Exemel::Element { last; } # skip if we changed type.
-    }
-#    for @metal -> $metal {
-#      my $tag = $!metal~':'~$metal;
-#      self!parse-tag($element, $tag, $metal);
-#    }
+    self!parse-element($element);
     ## Now we clean up removed elements, and insert replacements.
     if ! defined $element {
       $xml.nodes.splice($i--, 1);
@@ -116,11 +108,25 @@ method !parse-elements ($xml is rw) {
       $xml.nodes.splice($i--, 1, |$element);
     }
     else {
-      if $element ~~ Exemel::Element {
-        self!parse-elements($element);
-      }
       $xml.nodes[$i] = $element; # Ensure the node is updated.
     }
+  }
+}
+
+method !parse-element($element is rw) {
+  for @!petal-tags -> $petal {
+    my $tag = $!petal~':'~$petal;
+    self!parse-tag($element, $tag, $petal);
+    if $element !~~ Exemel::Element { last; } # skip if we changed type.
+  }
+## Haven't figured out METAL stuff entirely yet.
+# for @metal -> $metal {
+#   my $tag = $!metal~':'~$metal;
+#   self!parse-tag($element, $tag, $metal);
+# }
+## Now let's parse any child elements.
+  if $element ~~ Exemel::Element {
+    self!parse-elements($element);
   }
 }
 
@@ -165,7 +171,37 @@ method !parse-replace ($xml is rw, $tag) {
   }
 }
 
-method !parse-repeat ($xml is rw, $tag) { ... }
+method !parse-attributes ($xml is rw, $tag) {
+  my @statements = $xml.attribs{$tag}.split(/\;\s+/);
+  for @statements -> $statement {
+    my ($attrib, $query) = $statement.split(/\s+/, 2);
+    my $val = self.query($query, :noxml);
+    if defined $val {
+      $xml.set($attrib, $val);
+    }
+  }
+  $xml.unset: $tag;
+}
+
+method !parse-repeat ($xml is rw, $tag) { 
+  my ($attrib, $query) = $xml.attribs{$tag}.split(/\s+/, 2);
+  my $array = self.query($query);
+  if (defined $array && $array ~~ Array) {
+    $xml.unset($tag);
+    my @elements;
+    for @($array) -> $item {
+      my $newxml = $xml.clone;
+      %!data{$attrib} = $item;
+      self!parse-element($newxml);
+      @elements.push: $newxml;
+    }
+    %!data.delete($attrib);
+    $xml = @elements;
+  }
+  else {
+    $xml = Nil;
+  }
+}
 
 method !parse-omit-tag ($xml is rw, $tag) {
   my $nodes = $xml.nodes;
@@ -181,19 +217,52 @@ method !parse-omit-tag ($xml is rw, $tag) {
 ## This is a stub, expand it into a proper method.
 ## Changed it from private to public so that the handler subs
 ## could call this method.
-method query ($query) {
-  if $query eq '' { return True; }         # empty text is true.
-  if $query eq 'nothing' { return False; } # nothing is false.
+method query ($query, :$noxml) {
+  if $query eq '' { return True; }          # empty text is true.
+  if $query eq 'nothing' { return False; }  # nothing is false.
+  if $query ~~ /^\'(.*?)\'$/ { return ~$0 } # quoted string, no interpolation.
   if $query ~~ /<.ident>+\:/ {
     my ($handler, $subquery) = $query.split(/\:\s*/, 2);
     if %!modifiers.exists($handler) {
       return %!modifiers{$handler}(self, $subquery);
     }
   }
-  if %.data.exists($query) {
-    return %.data{$query} 
+  my @paths = $query.split(/\s+/, 2)[0].split('/');
+  my $data = self!lookup(@paths, %.data);
+  if ($noxml && $data !~~ Str|Numeric) {
+    return; ## With noxml set, we only accept Strings or Numbers.
   }
-  return;
+  return $data;
+}
+
+## This handles the lookups for query().
+method !lookup (@paths is copy, $data) {
+  my $path = @paths.shift;
+  my $found;
+  given $data {
+    when Hash {
+      if $data.exists($path) {
+        $found = .{$path};
+      }
+    }
+    when Array {
+      if $path < .elems {
+        $found = .[$path];
+      }
+    }
+    when Callable {
+      ## BIG FAT warning: We currently don't support parameters with spaces.
+      my ($command, *@args) = $path.split(/\s+/);
+      if .can($path) {
+        $found = ."$command"(|@args);
+      }
+    }
+    default { warn "attempt to access children of non-nested item." }
+  }
+  if @paths {
+    return self!lookup(@paths, $found);
+  }
+  return $found;
 }
 
 ## Add a single modifier routine.
