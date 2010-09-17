@@ -24,6 +24,9 @@ has $!find;
 ## Modifiers, keys are strings, values are subroutines.
 has %!modifiers;
 
+## Data, is used to store the replacement data. Is available for modifiers.
+has %.data is rw;
+
 method new (:$find is copy, :$file, :$template is copy) {
   if ( ! $file && ! $template ) { die "a file or template must be specified."; }
   if ! $find {
@@ -63,7 +66,10 @@ method !xml-ns ($ns is copy) {
 ## You can access the template Exemel::Document object by using the
 ## $flower.template attribute.
 method parse (*%data) {
-  ## First, let's see if the namespaces have been renamed.
+  ## First we need to set the data.
+  %.data = %data;
+
+  ## Next, let's see if the namespaces have been renamed.
   for $.template.root.attribs.kv -> $key, $val {
     if $val eq $!petal-ns {
       $!petal = self!xml-ns($key);
@@ -75,8 +81,9 @@ method parse (*%data) {
       $!i18n = self!xml-ns($key);
     }
   }
+
   ## Okay, now let's parse the elements.
-  self!parse-elements(%data, $.template.root);
+  self!parse-elements($.template.root);
   return ~$.template;
 }
 
@@ -84,22 +91,22 @@ method parse (*%data) {
 ## metal will be added in the next major release.
 ## i18n will be added at some point in the future.
 ## also TODO: implement 'on-error'.
-method !parse-elements (%data, $xml is rw) {
+method !parse-elements ($xml is rw) {
   ## Due to the strange nature of some rules, we're not using the
   ## 'elements' helper, nor using a nice 'for' loop. Instead we're doing this
-  ## by hand. It'll all make sense.
+  ## by hand. Don't worry, it'll all make sense.
   loop (my $i=0; True; $i++) {
     if $i == $xml.nodes.elems { last; }
     my $element = $xml.nodes[$i];
     if $element !~~ Exemel::Element { next; } # skip non-elements.
     for @!petal-tags -> $petal {
       my $tag = $!petal~':'~$petal;
-      self!parse-tag(%data, $element, $tag, $petal);
+      self!parse-tag($element, $tag, $petal);
       if $element !~~ Exemel::Element { last; } # skip if we changed type.
     }
 #    for @metal -> $metal {
 #      my $tag = $!metal~':'~$metal;
-#      self!parse-tag(%data, $element, $tag, $metal);
+#      self!parse-tag($element, $tag, $metal);
 #    }
     ## Now we clean up removed elements, and insert replacements.
     if ! defined $element {
@@ -110,66 +117,81 @@ method !parse-elements (%data, $xml is rw) {
     }
     else {
       if $element ~~ Exemel::Element {
-        self!parse-elements(%data, $element);
+        self!parse-elements($element);
       }
       $xml.nodes[$i] = $element; # Ensure the node is updated.
     }
   }
 }
 
-method !parse-tag (%data, $element is rw, $tag, $ns) {
+method !parse-tag ($element is rw, $tag, $ns) {
   my $method = 'parse-'~$ns;
   if $element.attribs.exists($tag) {
-    self!"$method"(%data, $element, $tag);
+    self!"$method"($element, $tag);
   }
 }
 
-method !parse-define (%data, $xml is rw, $tag) {
+method !parse-define ($xml is rw, $tag) {
   my ($attrib, $query) = $xml.attribs{$tag}.split(/\s+/, 2);
-  my $val = self.query(%data, $query);
-  if defined $val { %data{$attrib} = $val; }
+  my $val = self.query($query);
+  if defined $val { %.data{$attrib} = $val; }
   $xml.unset($tag);
 }
 
-method !parse-condition (%data, $xml is rw, $tag) {
-  if self.query(%data, $xml.attribs{$tag}) {
+method !parse-condition ($xml is rw, $tag) {
+  if self.query($xml.attribs{$tag}) {
     $xml.unset($tag);
   } else {
     $xml = Nil;
   }
 }
 
-method !parse-content (%data, $xml is rw, $tag) {
+method !parse-content ($xml is rw, $tag) {
   $xml.nodes.splice;
-  $xml.nodes.push: self.query(%data, $xml.attribs{$tag});
+  my $node = self.query($xml.attribs{$tag});
+  if defined $node {
+    $xml.nodes.push: $node;
+  }
   $xml.unset: $tag;
 }
 
-method !parse-replace (%data, $xml is rw, $tag) {
+method !parse-replace ($xml is rw, $tag) {
   my $text = $xml.attribs{$tag};
-  $xml = Exemel::Text.new(:text(self.query(%data, $text)));
+  if defined $text {
+    $xml = Exemel::Text.new(:text(self.query($text)));
+  }
+  else {
+    $xml = Nil;
+  }
 }
 
-method !parse-repeat (%data, $xml is rw, $tag) { ... }
+method !parse-repeat ($xml is rw, $tag) { ... }
 
-method !parse-omit-tag (%data, $xml is rw, $tag) {
+method !parse-omit-tag ($xml is rw, $tag) {
   my $nodes = $xml.nodes;
+  my $query = $xml.attribs{$tag};
+  if self.query($query) {
+    $xml = $nodes;
+  }
+  else {
+    $xml.unset: $tag;
+  }
 }
 
 ## This is a stub, expand it into a proper method.
 ## Changed it from private to public so that the handler subs
 ## could call this method.
-method query (%data, $query) {
+method query ($query) {
   if $query eq '' { return True; }         # empty text is true.
   if $query eq 'nothing' { return False; } # nothing is false.
   if $query ~~ /<.ident>+\:/ {
-    my ($handler, $subquery) = split(/\:\s*/, 2);
+    my ($handler, $subquery) = $query.split(/\:\s*/, 2);
     if %!modifiers.exists($handler) {
       return %!modifiers{$handler}(self, $subquery);
     }
   }
-  if %data.exists($query) {
-    return %data{$query} 
+  if %.data.exists($query) {
+    return %.data{$query} 
   }
   return;
 }

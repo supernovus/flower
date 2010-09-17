@@ -6,7 +6,7 @@
 use Flower;
 use Flower::Utils::Text;
 
-my $template='<test><item name="booya" petal:define="oops my_test_var" petal:content="oops"/><gone petal:replace="hello"/><true petal:condition="hello">This is true</true><false petal:condition="notreal">This is false</false><wrong petal:condition="not:hello">This should not show up.</wrong><upper petal:replace="uc:string:lots of text"/></test>';
+my $template='<test><item name="booya" petal:define="oops my_test_var" petal:content="oops"/><gone petal:replace="hello"/><true petal:condition="hello">This is true</true><false petal:condition="notreal">This is false</false><wrong petal:condition="not:hello">This should not show up.</wrong><upper petal:content="uc:string:hello"/></test>';
 
 my $parser = Flower.new(:template($template));
 
