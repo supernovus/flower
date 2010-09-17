@@ -5,9 +5,9 @@
 
 use Flower;
 
-my $template='<test><item name="booya" petal:define="oops my_test_var" petal:content="oops"/></test>';
+my $template='<test><item name="booya" petal:define="oops my_test_var" petal:content="oops"/><gone petal:replace="hello"/></test>';
 
 my $parser = Flower.new(:template($template));
 
-say $parser.parse(my_test_var => 'oh noes');
+say $parser.parse(my_test_var => 'oh noes', hello => 'Hello World');
 

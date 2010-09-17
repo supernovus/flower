@@ -8,9 +8,13 @@ has $!petal is rw = 'petal';
 has $!metal is rw = 'metal';
 has $!i18n is rw  = 'i18n';
 
-has $!petal_ns = 'http://purl.org/petal/1.0/';
-has $!metal_ns = 'http://xml.zope.org/namespaces/metal';
-has $!i18n_ns  = 'http://xml.zope.org/namespaces/i18n';
+has $!petal-ns = 'http://purl.org/petal/1.0/';
+has $!metal-ns = 'http://xml.zope.org/namespaces/metal';
+has $!i18n-ns  = 'http://xml.zope.org/namespaces/i18n';
+
+has @!petal-tags = 'define', 'condition', 'repeat', 'attributes', 'content', 'replace', 'omit-tag';
+
+has @!metal-tags = 'define-macro', 'use-macro', 'define-slot', 'fill-slot';
 
 ## Override find with a subroutine that can find templates based off
 ## of whatever your needs are (multiple roots, extensions, etc.)
@@ -49,16 +53,20 @@ method !xml-ns ($ns is copy) {
   return $ns;
 }
 
+## Note: Once you have parsed, the template will forever be changed.
+## You can't parse twice, so don't fark it up!
+## You can access the template Exemel::Document object by using the
+## $flower.template attribute.
 method parse (*%data) {
   ## First, let's see if the namespaces have been renamed.
   for $.template.root.attribs.kv -> $key, $val {
-    if $val eq $!petal_ns {
+    if $val eq $!petal-ns {
       $!petal = self!xml-ns($key);
     }
-    elsif $val eq $!metal_ns {
+    elsif $val eq $!metal-ns {
       $!metal = self!xml-ns($key);
     }
-    elsif $val eq $!i18n_ns {
+    elsif $val eq $!i18n-ns {
       $!i18n = self!xml-ns($key);
     }
   }
@@ -70,18 +78,19 @@ method parse (*%data) {
 ## parse-elements, currently only does petal items.
 ## metal will be added in the next major release.
 ## i18n will be added at some point in the future.
+## also TODO: implement 'on-error'.
 method !parse-elements (%data, $xml is rw) {
-  my @petal = 'define', 'condition', 'content', 'repeat', 'replace', 'omit-tag';
-  #my @metal = 'define-macro', 'use-macro', 'define-slot', 'fill-slot';
   ## Due to the strange nature of some rules, we're not using the
   ## 'elements' helper, nor using a nice 'for' loop. Instead we're doing this
   ## by hand. It'll all make sense.
-  loop (my $i=0; $i < $xml.nodes.elems; $i++) {
+  loop (my $i=0; True; $i++) {
+    if $i == $xml.nodes.elems { last; }
     my $element = $xml.nodes[$i];
     if $element !~~ Exemel::Element { next; } # skip non-elements.
-    for @petal -> $petal {
+    for @!petal-tags -> $petal {
       my $tag = $!petal~':'~$petal;
       self!parse-tag(%data, $element, $tag, $petal);
+      if $element !~~ Exemel::Element { last; } # skip if we changed type.
     }
 #    for @metal -> $metal {
 #      my $tag = $!metal~':'~$metal;
@@ -92,9 +101,12 @@ method !parse-elements (%data, $xml is rw) {
       $xml.nodes.splice($i--, 1);
     }
     elsif $element ~~ Array {
-      $xml.nodes.splice($i, 1, |$element);
+      $xml.nodes.splice($i--, 1, |$element);
     }
     else {
+      if $element ~~ Exemel::Element {
+        self!parse-elements(%data, $element);
+      }
       $xml.nodes[$i] = $element; # Ensure the node is updated.
     }
   }
@@ -122,7 +134,10 @@ method !parse-content (%data, $xml is rw, $tag) {
   $xml.unset: $tag;
 }
 
-method !parse-replace (%data, $xml is rw, $tag) { ... }
+method !parse-replace (%data, $xml is rw, $tag) {
+  my $text = $xml.attribs{$tag};
+  $xml = Exemel::Text.new(:text(self!query(%data, $text)));
+}
 
 method !parse-repeat (%data, $xml is rw, $tag) { ... }
 
