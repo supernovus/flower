@@ -1,6 +1,7 @@
 class Flower;
 
 use Exemel;
+use Flower::DefaultModifiers;
 
 has $.template;
 
@@ -19,6 +20,9 @@ has @!metal-tags = 'define-macro', 'use-macro', 'define-slot', 'fill-slot';
 ## Override find with a subroutine that can find templates based off
 ## of whatever your needs are (multiple roots, extensions, etc.)
 has $!find;
+
+## Modifiers, keys are strings, values are subroutines.
+has %!modifiers;
 
 method new (:$find is copy, :$file, :$template is copy) {
   if ( ! $file && ! $template ) { die "a file or template must be specified."; }
@@ -45,7 +49,8 @@ method new (:$find is copy, :$file, :$template is copy) {
       die "invalid template type passed.";
     }
   }
-  self.bless(*, :$template, :$find);
+  my %modifiers = Flower::DefaultModifiers::all();
+  self.bless(*, :$template, :$find, :%modifiers);
 }
 
 method !xml-ns ($ns is copy) {
@@ -121,31 +126,69 @@ method !parse-tag (%data, $element is rw, $tag, $ns) {
 
 method !parse-define (%data, $xml is rw, $tag) {
   my ($attrib, $query) = $xml.attribs{$tag}.split(/\s+/, 2);
-  my $val = self!query(%data, $query);
+  my $val = self.query(%data, $query);
   if defined $val { %data{$attrib} = $val; }
   $xml.unset($tag);
 }
 
-method !parse-condition (%data, $xml is rw, $tag) { ... }
+method !parse-condition (%data, $xml is rw, $tag) {
+  if self.query(%data, $xml.attribs{$tag}) {
+    $xml.unset($tag);
+  } else {
+    $xml = Nil;
+  }
+}
 
 method !parse-content (%data, $xml is rw, $tag) {
   $xml.nodes.splice;
-  $xml.nodes.push: self!query(%data, $xml.attribs{$tag});
+  $xml.nodes.push: self.query(%data, $xml.attribs{$tag});
   $xml.unset: $tag;
 }
 
 method !parse-replace (%data, $xml is rw, $tag) {
   my $text = $xml.attribs{$tag};
-  $xml = Exemel::Text.new(:text(self!query(%data, $text)));
+  $xml = Exemel::Text.new(:text(self.query(%data, $text)));
 }
 
 method !parse-repeat (%data, $xml is rw, $tag) { ... }
 
-method !parse-omit-tag (%data, $xml is rw, $tag) { ... }
+method !parse-omit-tag (%data, $xml is rw, $tag) {
+  my $nodes = $xml.nodes;
+}
 
 ## This is a stub, expand it into a proper method.
-method !query (%data, $query) {
-  if %data.exists($query) { return %data{$query} }
+## Changed it from private to public so that the handler subs
+## could call this method.
+method query (%data, $query) {
+  if $query eq '' { return True; }         # empty text is true.
+  if $query eq 'nothing' { return False; } # nothing is false.
+  if $query ~~ /<.ident>+\:/ {
+    my ($handler, $subquery) = split(/\:\s*/, 2);
+    if %!modifiers.exists($handler) {
+      return %!modifiers{$handler}(self, $subquery);
+    }
+  }
+  if %data.exists($query) {
+    return %data{$query} 
+  }
   return;
+}
+
+## Add a single modifier routine.
+method add-modifier($name, Callable $routine) {
+  %!modifiers{$name} = $routine;
+}
+
+## Add a bunch of modifiers, mainly used for plugin libraries.
+## Example:
+##  use Flower;
+##  use Flower::Utils::Logic;
+##  my $flower = Flower.new(:file('template.xml'));
+##  $flower.add-modifiers(Flower::Utils::Logic::all());
+##
+method add-modifiers(%modifiers) {
+  for %modifiers.kv -> $key, $val {
+    self.add-modifier($key, $val);
+  }
 }
 
