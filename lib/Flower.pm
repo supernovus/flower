@@ -98,6 +98,7 @@ method !parse-elements ($xml is rw) {
   loop (my $i=0; True; $i++) {
     if $i == $xml.nodes.elems { last; }
     my $element = $xml.nodes[$i];
+    say "Processing: " ~ $element ~ ' = ' ~ $element.WHAT;
     if $element !~~ Exemel::Element { next; } # skip non-elements.
     self!parse-element($element);
     ## Now we clean up removed elements, and insert replacements.
@@ -105,7 +106,8 @@ method !parse-elements ($xml is rw) {
       $xml.nodes.splice($i--, 1);
     }
     elsif $element ~~ Array {
-      $xml.nodes.splice($i--, 1, |$element);
+      say "Splicing an array";
+      $xml.nodes.splice($i--, 1, |@($element));
     }
     else {
       $xml.nodes[$i] = $element; # Ensure the node is updated.
@@ -192,6 +194,7 @@ method !parse-repeat ($xml is rw, $tag) {
     for @($array) -> $item {
       my $newxml = $xml.clone;
       %!data{$attrib} = $item;
+      say "Processing repeated item";
       self!parse-element($newxml);
       @elements.push: $newxml;
     }
