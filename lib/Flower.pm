@@ -95,10 +95,10 @@ method !parse-elements ($xml is rw) {
   ## Due to the strange nature of some rules, we're not using the
   ## 'elements' helper, nor using a nice 'for' loop. Instead we're doing this
   ## by hand. Don't worry, it'll all make sense.
+#  if ! $xml.nodes { return; }
   loop (my $i=0; True; $i++) {
     if $i == $xml.nodes.elems { last; }
     my $element = $xml.nodes[$i];
-    say "Processing: " ~ $element ~ ' = ' ~ $element.WHAT;
     if $element !~~ Exemel::Element { next; } # skip non-elements.
     self!parse-element($element);
     ## Now we clean up removed elements, and insert replacements.
@@ -106,7 +106,6 @@ method !parse-elements ($xml is rw) {
       $xml.nodes.splice($i--, 1);
     }
     elsif $element ~~ Array {
-      say "Splicing an array";
       $xml.nodes.splice($i--, 1, |@($element));
     }
     else {
@@ -192,11 +191,11 @@ method !parse-repeat ($xml is rw, $tag) {
     $xml.unset($tag);
     my @elements;
     for @($array) -> $item {
-      my $newxml = $xml.clone;
+      my $newxml = $xml.deep-clone;
       %!data{$attrib} = $item;
-      say "Processing repeated item";
-      self!parse-element($newxml);
-      @elements.push: $newxml;
+      my $wrapper = Exemel::Element.new(:nodes(($newxml)));
+      self!parse-elements($wrapper);
+      @elements.push: @($wrapper.nodes);
     }
     %!data.delete($attrib);
     $xml = @elements;

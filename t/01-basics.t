@@ -28,5 +28,9 @@ is $flower.parse(hello => 'hello world'), $xml~'<test>Good Day Mate</test>', 'pe
 
 $template = '<test><attrib petal:attributes="hello hello; cya goodbye"/></test>';
 $flower = Flower.new(:template($template));
-is $flower.parse(hello => 'Hello World', goodbye => 'Goodbye Universe'), $xml~'<test><attrib hello="Hello World" cya="Goodbye Universe"/></test>', 'petal:attributes';
+my $matched = False;
+my $output = $flower.parse(hello => 'Hello World', goodbye => 'Goodbye Universe');
+if $output eq $xml~'<test><attrib hello="Hello World" cya="Goodbye Universe"/></test>' { $matched = True; }
+elsif $output eq $xml~'<test><attrib cya="Goodbye Universe" hello="Hello World"/></test>' { $matched = True; }
+ok $matched, 'petal:attributes';
 
