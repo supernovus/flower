@@ -11,6 +11,9 @@ feature-set and parsing model.
 That said, it tries to implement as much of Petal as possible in a mostly
 compatible form, major differences are listed below.
 
+Note: Flower is not yet complete, and is still missing a lot of functionality.
+      See the docs/TODO.txt for a list of things I'm planning on adding.
+
 = Requirements:
 
  - Exemel, the XML library that powers Flower.
@@ -23,7 +26,6 @@ compatible form, major differences are listed below.
 
  * Flower can use template strings instead of requiring files.
  * Flower does not support the multiple template files based on language.
-   It will have an I18N framework similar to Petal::I18N (not on first release.)
  * Adding custom modifiers is completely different in Flower.
  * There is NO support for anything but well-formed XML.
    There is no equivelant to the Petal::Parser::HTB, and no plans for one.
@@ -35,7 +37,7 @@ other changes will be introduced that be a gotchya for Petal users.
 = Flower::Utils
 
 Inspired by Petal::Utils, Flower includes a namespace called Flower::Utils::
-If you load modules in the Petal::Utisl:: namespace, it will add additional
+If you load modules in the Petal::Utils:: namespace, it will add additional
 modifiers. The following sets are planned for inclusion:
 
   - Text, same as the :text set from Petal::Utils

@@ -155,7 +155,7 @@ method !parse-condition ($xml is rw, $tag) {
 
 method !parse-content ($xml is rw, $tag) {
   $xml.nodes.splice;
-  my $node = self.query($xml.attribs{$tag});
+  my $node = self.query($xml.attribs{$tag}, :forcexml);
   if defined $node {
     $xml.nodes.push: $node;
   }
@@ -165,7 +165,7 @@ method !parse-content ($xml is rw, $tag) {
 method !parse-replace ($xml is rw, $tag) {
   my $text = $xml.attribs{$tag};
   if defined $text {
-    $xml = Exemel::Text.new(:text(self.query($text)));
+    $xml = self.query($text, :forcexml); 
   }
   else {
     $xml = Nil;
@@ -219,7 +219,7 @@ method !parse-omit-tag ($xml is rw, $tag) {
 ## This is a stub, expand it into a proper method.
 ## Changed it from private to public so that the handler subs
 ## could call this method.
-method query ($query, :$noxml) {
+method query ($query, :$noxml, :$forcexml) {
   if $query eq '' { return True; }          # empty text is true.
   if $query eq 'nothing' { return False; }  # nothing is false.
   if $query ~~ /^\'(.*?)\'$/ { return ~$0 } # quoted string, no interpolation.
@@ -231,6 +231,9 @@ method query ($query, :$noxml) {
   }
   my @paths = $query.split(/\s+/, 2)[0].split('/');
   my $data = self!lookup(@paths, %.data);
+  if ($forcexml && $data ~~ Str|Numeric) {
+    $data = Exemel::Text.new(:text($data));
+  }
   if ($noxml && $data !~~ Str|Numeric) {
     return; ## With noxml set, we only accept Strings or Numbers.
   }
