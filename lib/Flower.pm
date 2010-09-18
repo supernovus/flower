@@ -222,14 +222,20 @@ method !parse-omit-tag ($xml is rw, $tag) {
 method query ($query, :$noxml, :$forcexml) {
   if $query eq '' { return True; }          # empty text is true.
   if $query eq 'nothing' { return False; }  # nothing is false.
-  if $query ~~ /^\'(.*?)\'$/ { return ~$0 } # quoted string, no interpolation.
-  if $query ~~ /<.ident>+\:/ {
+  if $query ~~ /^\'(.*?)\'$/ { 
+      if ($forcexml) {
+          return Exemel::Text.new(:text(~$0));
+      }
+      return ~$0;
+  } # quoted string, no interpolation.
+  if $query ~~ /^<.ident>+\:/ {
     my ($handler, $subquery) = $query.split(/\:\s*/, 2);
     if %!modifiers.exists($handler) {
       return %!modifiers{$handler}(self, $subquery);
     }
   }
-  my @paths = $query.split(/\s+/, 2)[0].split('/');
+  my @paths = $query.split('/');
+    #$query.split(/\s+/, 2)[0].split('/');
   my $data = self!lookup(@paths, %.data);
   if ($forcexml && $data ~~ Str|Numeric) {
     $data = Exemel::Text.new(:text($data));
@@ -255,14 +261,19 @@ method !lookup (@paths is copy, $data) {
         $found = .[$path];
       }
     }
-    when Callable {
-      ## BIG FAT warning: We currently don't support parameters with spaces.
-      my ($command, *@args) = $path.split(/\s+/);
-      if .can($path) {
+    default {
+      my ($command, *@args) = $path.comb(/ [ \'.*?\' | \S+ ] /); #split(/\s+/);
+      if .can($command) {
+        ## Let's query those arguments.
+        for @args -> $arg is rw {
+            $arg = self.query($arg);
+        }
         $found = ."$command"(|@args);
       }
+      else {
+          warn "attempt to access an invalid item.";
+      }
     }
-    default { warn "attempt to access children of non-nested item." }
   }
   if @paths {
     return self!lookup(@paths, $found);
