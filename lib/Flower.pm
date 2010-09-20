@@ -56,9 +56,8 @@ method new (:$find is copy, :$file, :$template is copy) {
   self.bless(*, :$template, :$find, :%modifiers);
 }
 
-method !xml-ns ($ns is copy) {
-  $ns ~~ s/^xmlns\://;
-  return $ns;
+method !xml-ns ($ns) {
+  return $ns.subst(/^xmlns\:/, '');
 }
 
 ## Note: Once you have parsed, the template will forever be changed.
