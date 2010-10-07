@@ -2,7 +2,7 @@
 
 ## Based on the second repeat test, but using petal:block instead of omit-tag.
 
-BEGIN { @*INC.push: './lib' }
+BEGIN { @*INC.unshift: './lib' }
 
 use Test;
 use Flower;

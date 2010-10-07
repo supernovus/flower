@@ -12,12 +12,13 @@ our sub all() {
   return %modifiers;
 }
 
-our sub upper ($parent, $query) {
+our sub upper ($parent, $query, *%opts) {
   my $result = $parent.query($query);
   return $result.uc;
 }
 
-our sub lower ($parent, $query) {
+our sub lower ($parent, $query, *%opts) {
   my $result = $parent.query($query);
   return $result.lc;
 }
+

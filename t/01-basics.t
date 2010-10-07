@@ -1,11 +1,11 @@
 #!/usr/bin/env perl6
 
-BEGIN { @*INC.push: './lib' }
+BEGIN { @*INC.unshift: './lib' }
 
 use Test;
 use Flower;
 
-plan 5;
+plan 6;
 
 my $xml = '<?xml version="1.0"?>';
 
@@ -33,4 +33,8 @@ my $output = $flower.parse(hello => 'Hello World', goodbye => 'Goodbye Universe'
 if $output eq $xml~'<test><attrib hello="Hello World" cya="Goodbye Universe"/></test>' { $matched = True; }
 elsif $output eq $xml~'<test><attrib cya="Goodbye Universe" hello="Hello World"/></test>' { $matched = True; }
 ok $matched, 'petal:attributes';
+
+$template = '<test><hello/><goodbye petal:replace=""/></test>';
+$flower = Flower.new(:template($template));
+is $flower.parse(), $xml~'<test><hello/></test>', 'petal:replace when empty.';
 

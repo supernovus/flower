@@ -1,5 +1,6 @@
 Short Term (October 2010)
- - Make Handlers able to support options such as noxml and forcexml.
+ - Implement 'repeat' magic variable.
+ - Implement XML escaping on text nodes.
  - Finish implementing Flower::Utils, as per the README.
  - Add dump: handler to DefaultHandlers, as per the README.
 

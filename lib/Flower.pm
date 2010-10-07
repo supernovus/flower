@@ -149,7 +149,7 @@ method !parse-define ($xml is rw, $tag) {
 }
 
 method !parse-condition ($xml is rw, $tag) {
-  if self.query($xml.attribs{$tag}) {
+  if self.query($xml.attribs{$tag}, :bool) {
     $xml.unset($tag);
   } else {
     $xml = Nil;
@@ -211,7 +211,7 @@ method !parse-repeat ($xml is rw, $tag) {
 method !parse-omit-tag ($xml is rw, $tag) {
   my $nodes = $xml.nodes;
   my $query = $xml.attribs{$tag};
-  if self.query($query) {
+  if self.query($query, :bool) {
     $xml = $nodes;
   }
   else {
@@ -219,12 +219,16 @@ method !parse-omit-tag ($xml is rw, $tag) {
   }
 }
 
-## This is a stub, expand it into a proper method.
-## Changed it from private to public so that the handler subs
-## could call this method.
-method query ($query, :$noxml, :$forcexml) {
-  if $query eq '' { return True; }          # empty text is true.
-  if $query eq 'nothing' { return False; }  # nothing is false.
+## Query data, this 
+method query ($query, :$noxml, :$forcexml, :$bool) {
+  if $query eq '' { 
+    if ($bool) { return True; }
+    else       { return '';   }
+  }
+  if $query eq 'nothing' { 
+    if ($bool) { return False; }
+    else       { return '';    }
+  }
   if $query ~~ /^\'(.*?)\'$/ { 
       if ($forcexml) {
           return Exemel::Text.new(:text(~$0));
@@ -234,16 +238,22 @@ method query ($query, :$noxml, :$forcexml) {
   if $query ~~ /^<.ident>+\:/ {
     my ($handler, $subquery) = $query.split(/\:\s*/, 2);
     if %!modifiers.exists($handler) {
-      return %!modifiers{$handler}(self, $subquery);
+      my $data = %!modifiers{$handler}(self, $subquery, :$noxml, :$forcexml, :$bool);
+      return self!query-xml($data, :$forcexml, :$noxml);
     }
   }
   my @paths = $query.split('/');
-    #$query.split(/\s+/, 2)[0].split('/');
   my $data = self!lookup(@paths, %.data);
-  if ($forcexml && $data ~~ Str|Numeric) {
-    $data = Exemel::Text.new(:text($data));
+  return self!query-xml($data, :$forcexml, :$noxml);
+}
+
+## Enforce forcexml and noxml rules for query().
+method !query-xml($data, :$forcexml, :$noxml) {
+  ## Default rule for forcexml converts non-XML objects into Exemel::Text.
+  if ($forcexml && $data !~~ Exemel) {
+    return Exemel::Text.new(:text(~$data));
   }
-  if ($noxml && $data !~~ Str|Numeric) {
+  elsif ($noxml && $data !~~ Str|Numeric) {
     return; ## With noxml set, we only accept Strings or Numbers.
   }
   return $data;

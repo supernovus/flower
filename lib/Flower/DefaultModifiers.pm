@@ -10,18 +10,18 @@ our sub all() {
   return %modifiers;
 }
 
-our sub true ($parent, $query) {
-  my $result = $parent.query($query);
+our sub true ($parent, $query, *%opts) {
+  my $result = $parent.query($query, :bool);
   return ?$result;
 }
 
-our sub false ($parent, $query) {
-  my $result = $parent.query($query);
+our sub false ($parent, $query, *%opts) {
+  my $result = $parent.query($query, :bool);
   if $result { return False; }
   else { return True; }
 }
 
-our sub string ($parent, $query) {
+our sub string ($parent, $query, *%opts) {
   my $string = $query;
 #  $string ~~ s:g/ '${' (.*?) '}' / $parent.query($0) /; # NYI in rakudo.
   $string.=subst(:g, rx/'${' (.*?) '}'/, -> $/ { $parent.query($0) });

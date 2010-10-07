@@ -31,9 +31,13 @@ Note: Flower is not yet complete, and is still missing a lot of functionality.
    There is no equivelant to the Petal::Parser::HTB, and no plans for one.
    Use well-formed XML, it's just better.
  * Flower supports petal:block elements, as per the PHPTAL project.
+ * There is no 'structure' keyword. Strings are turned into Exemel::Text
+   objects. If you really want to use XML structures in a replace or content
+   statement, return an Exemel::Element.
 
 The above list will be updated as this project is developed, as I'm sure
-other changes will be introduced that be a gotchya for Petal users.
+other changes will be introduced that will be a gotchya for users of Petal,
+Zope or PHPTAL.
 
 = Flower::Utils
 

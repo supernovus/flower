@@ -4,7 +4,7 @@
 ## Add a separate set of tests for Flower::Utils::Text, and one
 ## for all modifiers in the DefaultModifiers set.
 
-BEGIN { @*INC.push: './lib' }
+BEGIN { @*INC.unshift: './lib' }
 
 use Test;
 use Flower;
