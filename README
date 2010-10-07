@@ -36,6 +36,16 @@ Note: Flower is not yet complete, and is still missing a lot of functionality.
  * There is no 'structure' keyword. Strings are turned into Exemel::Text
    objects. If you really want to use XML structures in a replace or content
    statement, return an Exemel::Element.
+ * Nested repeats cannot use the same attribute name, it will get clobbered.
+ * The built-in repeat object is implemented as per the Zope/PHPTAL, not
+   the Petal version. Note: it does not support the 'letter' or 'Letter' 
+   attributes, but instead has some new methods that take paramters: 
+     'every xx'   the number (not the index) is divisible by xx.
+     'never xx'   the number is not divisible by xx.
+     'gt xx'      the number is greater than xx.
+     'lt xx'      the number is less than xx.
+     'eq xx'      the number is equal to xx.
+     'ne xx'      the number is not equal to xx.
 
 The above list will be updated as this project is developed, as I'm sure
 other changes will be introduced that will be a gotchya for users of Petal,
@@ -56,6 +66,8 @@ modifiers. The following sets are planned for inclusion:
     DateTime and Date objects in addition to epoch timestamps.
     If you pass a DateTime or Date object without one of these filters you
     will get its standard stringification form (ISO by default.)
+  - Perl, makes a 'perl:' modifier available, which is the counterpart
+    to Zope's 'python:' or PHPTAL's 'php:' modifiers.
 
 URI is not included (feel free to write it if you need it) and neither is 
 Debug, but that's okay, because dump:

@@ -1,5 +1,4 @@
 Short Term (October 2010)
- - Implement 'repeat' magic variable.
  - Implement XML escaping on text nodes.
  - Finish implementing Flower::Utils, as per the README.
  - Add dump: handler to DefaultHandlers, as per the README.
@@ -7,6 +6,7 @@ Short Term (October 2010)
 Medium Term (December 2010)
  - Implement METAL support.
  - Implement query caching.
+ - Implement multiple paths (/test/path1 | /test/path2) support.
 
 Long Term (2011)
  - Implement I18N support.

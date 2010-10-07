@@ -27,6 +27,28 @@ has %!modifiers;
 ## Data, is used to store the replacement data. Is available for modifiers.
 has %.data is rw;
 
+## Internal class, used for the 'repeat' object.
+class Flower::Repeat {
+  has $.index;
+  has $.length;
+
+  method number { $.index + 1           }
+  method start  { $.index == 0          }
+  method end    { $.index == $.length-1 }
+  method odd    { $.number % 2 != 0      }
+  method even   { $.number % 2 == 0      }
+
+  method inner  { $.index != 0 && $.index != $.length-1 }
+
+  ## Flower exclusive methods below here, make lists and tables easier.
+  method every  ($num) { $.number % $num == 0 }
+  method never  ($num) { $.number % $num != 0 }
+  method lt     ($num) { $.number < $num      }
+  method gt     ($num) { $.number > $num      }
+  method eq     ($num) { $.number == $num     }
+  method ne     ($num) { $.number != $num     }
+}
+
 method new (:$find is copy, :$file, :$template is copy) {
   if ( ! $file && ! $template ) { die "a file or template must be specified."; }
   if ! $find {
@@ -99,6 +121,7 @@ method !parse-elements ($xml is rw) {
     if $i == $xml.nodes.elems { last; }
     my $element = $xml.nodes[$i];
     if $element !~~ Exemel::Element { next; } # skip non-elements.
+    %.data<default> = $element.nodes;         # the 'default' keyword.
     self!parse-element($element);
     ## Now we clean up removed elements, and insert replacements.
     if ! defined $element {
@@ -142,9 +165,12 @@ method !parse-tag ($element is rw, $tag, $ns) {
 }
 
 method !parse-define ($xml is rw, $tag) {
-  my ($attrib, $query) = $xml.attribs{$tag}.split(/\s+/, 2);
-  my $val = self.query($query);
-  if defined $val { %.data{$attrib} = $val; }
+  my @statements = $xml.attribs{$tag}.split(/\;\s+/);
+  for @statements -> $statement {
+    my ($attrib, $query) = $statement.split(/\s+/, 2);
+    my $val = self.query($query);
+    if defined $val { %.data{$attrib} = $val; }
+  }
   $xml.unset($tag);
 }
 
@@ -191,16 +217,24 @@ method !parse-repeat ($xml is rw, $tag) {
   my ($attrib, $query) = $xml.attribs{$tag}.split(/\s+/, 2);
   my $array = self.query($query);
   if (defined $array && $array ~~ Array) {
+    if (! %.data.exists('repeat') || %.data<repeat> !~~ Hash) {
+      %.data<repeat> = {}; # Initialize the repeat hash.
+    }
     $xml.unset($tag);
     my @elements;
+    my $count = 0;
     for @($array) -> $item {
       my $newxml = $xml.deep-clone;
-      %!data{$attrib} = $item;
+      %.data{$attrib} = $item;
+      my $repeat = Flower::Repeat.new(:index($count), :length($array.elems));
+      %.data<repeat>{$attrib} = $repeat;
       my $wrapper = Exemel::Element.new(:nodes(($newxml)));
       self!parse-elements($wrapper);
       @elements.push: @($wrapper.nodes);
+      $count++;
     }
-    %!data.delete($attrib);
+    %.data<repeat>.delete($attrib);
+    %.data.delete($attrib);
     $xml = @elements;
   }
   else {
