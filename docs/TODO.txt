@@ -1,8 +1,13 @@
-Short Term
+Short Term (October 2010)
+ - Make Handlers able to support options such as noxml and forcexml.
+ - Finish implementing Flower::Utils, as per the README.
+ - Add dump: handler to DefaultHandlers, as per the README.
+
+Medium Term (December 2010)
  - Implement METAL support.
  - Implement query caching.
 
-Long Term
+Long Term (2011)
  - Implement I18N support.
  - Implement on-error.
 

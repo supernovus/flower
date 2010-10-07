@@ -30,6 +30,7 @@ Note: Flower is not yet complete, and is still missing a lot of functionality.
  * There is NO support for anything but well-formed XML.
    There is no equivelant to the Petal::Parser::HTB, and no plans for one.
    Use well-formed XML, it's just better.
+ * Flower supports petal:block elements, as per the PHPTAL project.
 
 The above list will be updated as this project is developed, as I'm sure
 other changes will be introduced that be a gotchya for Petal users.
@@ -45,12 +46,16 @@ modifiers. The following sets are planned for inclusion:
   - List, same as the :list set from Petal::Utils
   - Hash, same as the :hash set from Petal::Utils
   - Date, similar to the :date set from Petal::Utils, using on DateTime::Utils
-    Not exactly the same, it offers strftime:, iso: and rfc: and works on
+    Not exactly the same, it offers strftime: and rfc: and works on
     DateTime and Date objects in addition to epoch timestamps.
+    If you pass a DateTime or Date object without one of these filters you
+    will get its standard stringification form (ISO by default.)
 
-URI is not included, and neither is debug, but that's okay, because dump:
+URI is not included (feel free to write it if you need it) and neither is 
+Debug, but that's okay, because dump:
 is built into Flower (it does a .perl on the object.) I'm sure new exciting
-libraries will be made adding onto these.
+libraries will be made adding onto these (a JSON dumper would be nice.)
 
 = Author: Timothy Totten
 = License: Artistic License 2.0
+
