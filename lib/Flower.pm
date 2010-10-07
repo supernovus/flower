@@ -5,15 +5,15 @@ use Flower::DefaultModifiers;
 
 has $.template;
 
-has $!petal is rw = 'petal';
+has $!tal   is rw = 'tal';
 has $!metal is rw = 'metal';
-has $!i18n is rw  = 'i18n';
+has $!i18n  is rw = 'i18n';
 
-has $!petal-ns = 'http://purl.org/petal/1.0/';
+has $!tal-ns   = 'http://xml.zope.org/namespaces/tal';
 has $!metal-ns = 'http://xml.zope.org/namespaces/metal';
 has $!i18n-ns  = 'http://xml.zope.org/namespaces/i18n';
 
-has @!petal-tags = 'define', 'condition', 'repeat', 'attributes', 'content', 'replace', 'omit-tag';
+has @!tal-tags = 'define', 'condition', 'repeat', 'attributes', 'content', 'replace', 'omit-tag';
 
 has @!metal-tags = 'define-macro', 'use-macro', 'define-slot', 'fill-slot';
 
@@ -70,8 +70,8 @@ method parse (*%data) {
 
   ## Next, let's see if the namespaces have been renamed.
   for $.template.root.attribs.kv -> $key, $val {
-    if $val eq $!petal-ns {
-      $!petal = self!xml-ns($key);
+    if $val eq $!tal-ns {
+      $!tal = self!xml-ns($key);
     }
     elsif $val eq $!metal-ns {
       $!metal = self!xml-ns($key);
@@ -86,7 +86,7 @@ method parse (*%data) {
   return ~$.template;
 }
 
-## parse-elements, currently only does petal items.
+## parse-elements, currently only does tal items.
 ## metal will be added in the next major release.
 ## i18n will be added at some point in the future.
 ## also TODO: implement 'on-error'.
@@ -114,13 +114,13 @@ method !parse-elements ($xml is rw) {
 }
 
 method !parse-element($element is rw) {
-  for @!petal-tags -> $petal {
-    my $tag = $!petal~':'~$petal;
-    self!parse-tag($element, $tag, $petal);
+  for @!tal-tags -> $tal {
+    my $tag = $!tal~':'~$tal;
+    self!parse-tag($element, $tag, $tal);
     if $element !~~ Exemel::Element { last; } # skip if we changed type.
   }
-## petal:block borrowed from PHPTAL.
-  if ($element ~~ Exemel::Element && $element.name eq $!petal~':block') {
+## tal:block borrowed from PHPTAL.
+  if ($element ~~ Exemel::Element && $element.name eq $!tal~':block') {
     $element = $element.nodes;
   }
 ## Haven't figured out METAL stuff entirely yet.

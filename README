@@ -24,6 +24,8 @@ Note: Flower is not yet complete, and is still missing a lot of functionality.
 
 = Major Differences from Petal:
 
+ * The default local namespace is 'tal', and to override it, you must
+   declare http://xml.zope.org/namespaces/tal instead of the Petal namespace.
  * Flower can use template strings instead of requiring files.
  * Flower does not support the multiple template files based on language.
  * Adding custom modifiers is completely different in Flower.

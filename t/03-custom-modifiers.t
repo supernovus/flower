@@ -14,7 +14,7 @@ plan 1;
 
 my $xml = '<?xml version="1.0"?>';
 
-my $template = '<test><upper petal:content="uc:string:A test of ${name}, in uppercase."/></test>';
+my $template = '<test><upper tal:content="uc:string:A test of ${name}, in uppercase."/></test>';
 my $flower = Flower.new(:template($template));
 
 $flower.add-modifiers(Flower::Utils::Text::all());

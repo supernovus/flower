@@ -1,6 +1,6 @@
 #!/usr/bin/env perl6
 
-## Based on the second repeat test, but using petal:block instead of omit-tag.
+## Based on the second repeat test, but using tal:block instead of omit-tag.
 
 BEGIN { @*INC.unshift: './lib' }
 
@@ -17,7 +17,7 @@ my @items = (
   { :alt<Three>, :content<Third>  },
 );
 
-my $template = '<test><petal:block petal:repeat="item items"><tr><td petal:content="item/alt"/><td petal:content="item/content"/></tr></petal:block></test>';
+my $template = '<test><tal:block tal:repeat="item items"><tr><td tal:content="item/alt"/><td tal:content="item/content"/></tr></tal:block></test>';
 my $flower = Flower.new(:template($template));
-is $flower.parse(:items(@items)), $xml~'<test><tr><td>One</td><td>First</td></tr><tr><td>Two</td><td>Second</td></tr><tr><td>Three</td><td>Third</td></tr></test>', 'petal:block with a repeated item.';
+is $flower.parse(:items(@items)), $xml~'<test><tr><td>One</td><td>First</td></tr><tr><td>Two</td><td>Second</td></tr><tr><td>Three</td><td>Third</td></tr></test>', 'tal:block with a repeated item.';
 
