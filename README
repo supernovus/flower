@@ -68,11 +68,12 @@ modifiers. The following sets are planned for inclusion:
     will get its standard stringification form (ISO by default.)
   - Perl, makes a 'perl:' modifier available, which is the counterpart
     to Zope's 'python:' or PHPTAL's 'php:' modifiers.
+  - Debug, similar to :debug set from Petal::Utils.
+    dump: modifier spits out the .perl representation of the object.
+    what: modifier spits out the class name of the object.
 
-URI is not included (feel free to write it if you need it) and neither is 
-Debug, but that's okay, because dump:
-is built into Flower (it does a .perl on the object.) I'm sure new exciting
-libraries will be made adding onto these (a JSON dumper would be nice.)
+URI is not included (feel free to write it if you need it.)
+I'm sure new exciting libraries will be made adding onto these.
 
 = Author: Timothy Totten
 = License: Artistic License 2.0

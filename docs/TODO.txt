@@ -1,7 +1,6 @@
 Short Term (October 2010)
  - Implement XML escaping on text nodes.
  - Finish implementing Flower::Utils, as per the README.
- - Add dump: handler to DefaultHandlers, as per the README.
 
 Medium Term (December 2010)
  - Implement METAL support.
