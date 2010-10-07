@@ -119,6 +119,10 @@ method !parse-element($element is rw) {
     self!parse-tag($element, $tag, $petal);
     if $element !~~ Exemel::Element { last; } # skip if we changed type.
   }
+## petal:block borrowed from PHPTAL.
+  if ($element ~~ Exemel::Element && $element.name eq $!petal~':block') {
+    $element = $element.nodes;
+  }
 ## Haven't figured out METAL stuff entirely yet.
 # for @metal -> $metal {
 #   my $tag = $!metal~':'~$metal;
