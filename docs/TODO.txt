@@ -1,13 +1,12 @@
-Short Term (October 2010)
- - Implement XML escaping on text nodes.
+Short Term (October 2010, Version 1.0 stable)
  - Finish implementing Flower::Utils, as per the README.
 
-Medium Term (December 2010)
+Medium Term (December 2010, Version 1.1 stable)
  - Implement METAL support.
  - Implement query caching.
  - Implement multiple paths (/test/path1 | /test/path2) support.
 
-Long Term (2011)
+Long Term (2011, Undetermined versions)
  - Implement I18N support.
  - Implement on-error.
 

@@ -14,11 +14,11 @@ our sub all() {
 
 our sub upper ($parent, $query, *%opts) {
   my $result = $parent.query($query);
-  return $result.uc;
+  return $parent.process-query($result.uc, |%opts);
 }
 
 our sub lower ($parent, $query, *%opts) {
   my $result = $parent.query($query);
-  return $result.lc;
+  return $parent.process-query($result.lc, |%opts);
 }
 

@@ -17,6 +17,6 @@ our sub perl_query ($parent, $query, *%opts) {
   my $perl = $query.subst(/^(<&keyname>)/, -> $/ { '$parent.data<'~$0~'>' });
   $perl.=subst('.eval','.chomp', :g); ## Kill any attempts to eval.
   my $result = eval($perl);
-  return $result;
+  return $parent.process-query($result, |%opts);
 }
 

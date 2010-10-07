@@ -33,9 +33,11 @@ Note: Flower is not yet complete, and is still missing a lot of functionality.
    There is no equivelant to the Petal::Parser::HTB, and no plans for one.
    Use well-formed XML, it's just better.
  * Flower supports petal:block elements, as per the PHPTAL project.
- * There is no 'structure' keyword. Strings are turned into Exemel::Text
-   objects. If you really want to use XML structures in a replace or content
-   statement, return an Exemel::Element.
+ * While you can use the 'structure' keyword, it's not really needed.
+   If you want an unescaped XML structure for a replacement, send an
+   Exemel object (any class other than Document) and it will be added to
+   the XML tree. Send an array of Exemel objects, and they will additionally
+   be parsed for TAL statements.
  * Nested repeats cannot use the same attribute name, it will get clobbered.
  * The built-in repeat object is implemented as per the Zope/PHPTAL, not
    the Petal version. Note: it does not support the 'letter' or 'Letter' 

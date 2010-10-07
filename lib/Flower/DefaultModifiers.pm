@@ -25,6 +25,6 @@ our sub string ($parent, $query, *%opts) {
   my $string = $query;
 #  $string ~~ s:g/ '${' (.*?) '}' / $parent.query($0) /; # NYI in rakudo.
   $string.=subst(:g, rx/'${' (.*?) '}'/, -> $/ { $parent.query($0) });
-  return $string;
+  return $parent.process-query($string, |%opts);
 }
 

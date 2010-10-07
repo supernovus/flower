@@ -253,8 +253,8 @@ method !parse-omit-tag ($xml is rw, $tag) {
   }
 }
 
-## Query data, this 
-method query ($query, :$noxml, :$forcexml, :$bool) {
+## Query data.
+method query ($query is copy, :$noxml, :$forcexml, :$bool, :$noescape is copy) {
   if $query eq '' { 
     if ($bool) { return True; }
     else       { return '';   }
@@ -263,26 +263,34 @@ method query ($query, :$noxml, :$forcexml, :$bool) {
     if ($bool) { return False; }
     else       { return '';    }
   }
-  if $query ~~ /^\'(.*?)\'$/ { 
-      if ($forcexml) {
-          return Exemel::Text.new(:text(~$0));
-      }
-      return ~$0;
+  if $query ~~ /^ structure \s+ / {
+    $query.=subst(/^ structure \s+ /, '');
+    $noescape = True;
+  }
+  if $query ~~ /^\'(.*?)\'$/ {
+    return self.process-query(~$0, :$forcexml, :$noxml, :$noescape);
   } # quoted string, no interpolation.
   if $query ~~ /^<.ident>+\:/ {
     my ($handler, $subquery) = $query.split(/\:\s*/, 2);
     if %!modifiers.exists($handler) {
-      my $data = %!modifiers{$handler}(self, $subquery, :$noxml, :$forcexml, :$bool);
-      return self!query-xml($data, :$forcexml, :$noxml);
+      ## Modifiers are responsible for subqueries, and calls to process-query.
+      return %!modifiers{$handler}(self, $subquery, :$noxml, :$forcexml, :$bool, :$noescape);
     }
   }
   my @paths = $query.split('/');
   my $data = self!lookup(@paths, %.data);
-  return self!query-xml($data, :$forcexml, :$noxml);
+  return self.process-query($data, :$forcexml, :$noxml, :$noescape);
 }
 
-## Enforce forcexml and noxml rules for query().
-method !query-xml($data, :$forcexml, :$noxml) {
+## Enforce processing rules for query().
+method process-query($data is copy, :$forcexml, :$noxml, :$noescape, :$bool) {
+  ## First off, let's escape text, unless noescape is set.
+  if (!defined $noescape && $data ~~ Str) {
+    $data.=subst('&', '&amp;', :g);
+    $data.=subst('<', '&lt;', :g);
+    $data.=subst('>', '&gt;', :g);
+    $data.=subst('"', '&quot;', :g);
+  }
   ## Default rule for forcexml converts non-XML objects into Exemel::Text.
   if ($forcexml && $data !~~ Exemel) {
     return Exemel::Text.new(:text(~$data));
