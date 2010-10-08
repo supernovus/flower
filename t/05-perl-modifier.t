@@ -10,7 +10,6 @@ BEGIN { @*INC.unshift: './lib' }
 
 use Test;
 use Flower;
-use Flower::Utils::Perl;
 
 plan 1;
 
@@ -23,7 +22,7 @@ my %ahash = {
   'anobj' => FooBar.new,
 }
 
-$flower.add-modifiers(Flower::Utils::Perl::all());
+$flower.load-modifiers('Perl');
 
 is $flower.parse(ahash => %ahash), $xml~'<test>Hello world</test>', 'perl: modifier';
 

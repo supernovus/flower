@@ -360,9 +360,25 @@ method add-modifier($name, Callable $routine) {
 ##  my $flower = Flower.new(:file('template.xml'));
 ##  $flower.add-modifiers(Flower::Utils::Logic::all());
 ##
-method add-modifiers(%modifiers) {
+multi method add-modifiers(%modifiers) {
   for %modifiers.kv -> $key, $val {
     self.add-modifier($key, $val);
+  }
+}
+
+## The newest method for loading modifiers.
+## Pass it a list of libraries which have all() subs
+## and it will load them.
+## If the library name doesn't have a :: in it,
+## load-modifiers prepends "Flower::Utils::" to it.
+multi method load-modifiers(*@modules) {
+  for @modules -> $module {
+    my $plugin = $module;
+    if $plugin !~~ /'::'/ {
+      $plugin = "Flower::Utils::$plugin";
+    }
+    eval("use $plugin");
+    self.add-modifiers(eval($plugin~'::all()'));
   }
 }
 

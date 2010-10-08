@@ -4,7 +4,6 @@ BEGIN { @*INC.unshift: './lib' }
 
 use Test;
 use Flower;
-use Flower::Utils::Debug;
 
 plan 1;
 
@@ -17,7 +16,7 @@ my %ahash = {
   'anarray' => [ 'one', 'two', 'three' ],
 }
 
-$flower.add-modifiers(Flower::Utils::Debug::all());
+$flower.load-modifiers('Debug');
 
 is $flower.parse(object => %ahash), $xml~'<test><dump type="Hash">{"anarray" => ["one", "two", "three"]}</dump></test>', 'dump: and what: modifiers';
 

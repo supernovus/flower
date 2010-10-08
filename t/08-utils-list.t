@@ -4,7 +4,6 @@ BEGIN { @*INC.unshift: './lib' }
 
 use Test;
 use Flower;
-use Flower::Utils::List;
 
 plan 2;
 
@@ -14,7 +13,7 @@ my $template = '<table><tr tal:repeat="row group:2 items"><td tal:repeat="col ro
 
 my $flower = Flower.new(:template($template));
 
-$flower.add-modifiers(Flower::Utils::List::all());
+$flower.load-modifiers('List'); 
 
 is $flower.parse(:items(['a'..'d'])), $xml~'<table><tr><td>a</td><td>b</td></tr><tr><td>c</td><td>d</td></tr></table>', 'group: modifier';
 
