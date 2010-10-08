@@ -1,12 +1,12 @@
-Short Term (October 2010, Version 1.0 stable)
+Short Term (October 2010)
  - Finish implementing Flower::Utils, as per the README.
 
-Medium Term (December 2010, Version 1.1 stable)
+Medium Term (December 2010)
  - Implement METAL support.
  - Implement query caching.
  - Implement multiple paths (/test/path1 | /test/path2) support.
 
-Long Term (2011, Undetermined versions)
+Long Term (2011)
  - Implement I18N support.
  - Implement on-error.
 

@@ -11,16 +11,18 @@ feature-set and parsing model.
 That said, it tries to implement as much of Petal as possible in a mostly
 compatible form, major differences are listed below.
 
-Note: Flower is not yet complete, and is still missing a lot of functionality.
-      See the docs/TODO.txt for a list of things I'm planning on adding.
+Status: Flower is currently usable, but there are still plenty of planned
+        features. See the docs/TODO.txt for a list of things I'm planning.
 
 = Requirements:
 
  - Exemel, the XML library that powers Flower.
+   http://github.com/supernovus/exemel/
 
 = Optional libraries:
 
  - Temporal-Utils, needed if you want to use Flower::Utils::Date
+   http://github.com/supernovus/temporal-utils/
 
 = Major Differences from Petal:
 
@@ -57,11 +59,12 @@ Zope or PHPTAL.
 
 Inspired by Petal::Utils, Flower includes a namespace called Flower::Utils::
 If you load modules in the Petal::Utils:: namespace, it will add additional
-modifiers. The following sets are planned for inclusion:
+modifiers. The following sets are planned for inclusion (at the current time
+there are only a couple available, with a subset of the modifiers):
 
-  - Text, same as the :text set from Petal::Utils
+  - Text*, same as the :text set from Petal::Utils
   - Logic, same as the :logic set from Petal::Utils
-  - List, same as the :list set from Petal::Utils, plus group: which
+  - List*, same as the :list set from Petal::Utils, plus group: which
     turns a flat Array into a nested Array, where each inner Array has a
     set number of elements in it.
   - Hash, same as the :hash set from Petal::Utils
@@ -70,15 +73,19 @@ modifiers. The following sets are planned for inclusion:
     DateTime and Date objects in addition to epoch timestamps.
     If you pass a DateTime or Date object without one of these filters you
     will get its standard stringification form (ISO by default.)
-  - Perl, makes a 'perl:' modifier available, which is the counterpart
+  - Perl**, makes a 'perl:' modifier available, which is the counterpart
     to Zope's 'python:' or PHPTAL's 'php:' modifiers.
-  - Debug, similar to :debug set from Petal::Utils.
+  - Debug**, similar to :debug set from Petal::Utils.
     dump: modifier spits out the .perl representation of the object.
     what: modifier spits out the class name of the object.
 
-URI is not included (feel free to write it if you need it.)
+Sets marked with * have been partially implemented and are included with
+the current version of Flower. Sets marked with ** are fully implemented.
+
+The URI set is not planned for inclusion (feel free to write it if you need it.)
 I'm sure new exciting libraries will be made adding onto these.
 
 = Author: Timothy Totten
 = License: Artistic License 2.0
+  http://www.perlfoundation.org/artistic_license_2_0
 
