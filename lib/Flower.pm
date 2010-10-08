@@ -42,11 +42,15 @@ class Flower::Repeat {
 
   ## Flower exclusive methods below here, make lists and tables easier.
   method every  ($num) { $.number % $num == 0 }
-  method never  ($num) { $.number % $num != 0 }
+  method skip   ($num) { $.number % $num != 0 }
   method lt     ($num) { $.number < $num      }
   method gt     ($num) { $.number > $num      }
   method eq     ($num) { $.number == $num     }
   method ne     ($num) { $.number != $num     }
+
+  ## Versions of every and skip that also match on start.
+  method repeat-every ($num) { $.start || $.every($num) }
+  method repeat-skip  ($num) { $.start || $.every($num) }
 }
 
 method new (:$find is copy, :$file, :$template is copy) {
@@ -76,6 +80,14 @@ method new (:$find is copy, :$file, :$template is copy) {
   }
   my %modifiers = Flower::DefaultModifiers::all();
   self.bless(*, :$template, :$find, :%modifiers);
+}
+
+## A way to spawn another Flower using the same find and modifiers.
+method another (:$file, :$template) {
+  if ( ! $file && ! $template ) { die "a file or template must be specified."; }
+  my $new = Flower.new(:$file, :$template, :find($!find));
+  $new.add-modifiers(%!modifiers);
+  return $new;
 }
 
 method !xml-ns ($ns) {

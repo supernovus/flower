@@ -1,9 +1,4 @@
-module Flower::Utils::Perl;
-
-## Like it's cousins 'python:' and 'php:', the 'perl:' modifier allows
-## you to query the data using the native Perl 6 format instead of the
-## path syntax. Example: <eg tal:replace="perl:my-hash<key>.method('param')" />
-## The 'my-hash' in the example must be a valid key in the Flower data.
+module Flower::Utils::Debug;
 
 our sub all() {
   my %modifiers = {

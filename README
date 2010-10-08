@@ -43,7 +43,7 @@ Note: Flower is not yet complete, and is still missing a lot of functionality.
    the Petal version. Note: it does not support the 'letter' or 'Letter' 
    attributes, but instead has some new methods that take paramters: 
      'every xx'   the number (not the index) is divisible by xx.
-     'never xx'   the number is not divisible by xx.
+     'skip xx'    the number is not divisible by xx.
      'gt xx'      the number is greater than xx.
      'lt xx'      the number is less than xx.
      'eq xx'      the number is equal to xx.
@@ -61,7 +61,9 @@ modifiers. The following sets are planned for inclusion:
 
   - Text, same as the :text set from Petal::Utils
   - Logic, same as the :logic set from Petal::Utils
-  - List, same as the :list set from Petal::Utils
+  - List, same as the :list set from Petal::Utils, plus group: which
+    turns a flat Array into a nested Array, where each inner Array has a
+    set number of elements in it.
   - Hash, same as the :hash set from Petal::Utils
   - Date, similar to the :date set from Petal::Utils, using on DateTime::Utils
     Not exactly the same, it offers strftime: and rfc: and works on

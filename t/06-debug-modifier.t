@@ -17,7 +17,7 @@ my %ahash = {
   'anarray' => [ 'one', 'two', 'three' ],
 }
 
-$flower.add-modifiers(Flower::Utils::Perl::all());
+$flower.add-modifiers(Flower::Utils::Debug::all());
 
 is $flower.parse(object => %ahash), $xml~'<test><dump type="Hash">{"anarray" => ["one", "two", "three"]}</dump></test>', 'dump: and what: modifiers';
 

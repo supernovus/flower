@@ -20,12 +20,12 @@ my @items = (
 is $flower.parse(:items(@items)), $xml~'<test><item alt="One">First</item><item alt="Two">Second</item><item alt="Three">Third</item></test>', 'tal:repeat';
 
 $template = '<test><div tal:repeat="item items" tal:omit-tag=""><tr><td tal:content="item/alt"/><td tal:content="item/content"/></tr></div></test>';
-$flower = Flower.new(:template($template));
+$flower.=another(:template($template));
 is $flower.parse(:items(@items)), $xml~'<test><tr><td>One</td><td>First</td></tr><tr><td>Two</td><td>Second</td></tr><tr><td>Three</td><td>Third</td></tr></test>', 'tal:repeat with nested elements and omit-tag';
 
 ## Here we test tal:block as well.
 $template = '<test><tal:block tal:repeat="item items"><tr><td tal:content="item/alt"/><td tal:content="item/content"/></tr></tal:block></test>';
-$flower = Flower.new(:template($template));
+$flower.=another(:template($template));
 is $flower.parse(:items(@items)), $xml~'<test><tr><td>One</td><td>First</td></tr><tr><td>Two</td><td>Second</td></tr><tr><td>Three</td><td>Third</td></tr></test>', 'tal:block used in repeat';
 
 ## Now we're going to test the repeat object.
@@ -38,30 +38,30 @@ my @rows = (
   [ '3.1', '3.2', '3.3' ],
 );
 
-$flower = Flower.new(:template($template));
+$flower.=another(:template($template));
 is $flower.parse(:rows(@rows)), $xml~'<table><tr><td>1 / 1 = 1.1</td><td>1 / 2 = 1.2</td><td>1 / 3 = 1.3</td></tr><tr><td>2 / 1 = 2.1</td><td>2 / 2 = 2.2</td><td>2 / 3 = 2.3</td></tr><tr><td>3 / 1 = 3.1</td><td>3 / 2 = 3.2</td><td>3 / 3 = 3.3</td></tr></table>', 'nested repeat numbers';
 
 $template = '<test><tal:block tal:repeat="item items"><item tal:condition="repeat/item/odd" tal:attributes="id repeat/item/index">Odd</item><item tal:condition="repeat/item/even" tal:attributes="id repeat/item/index">Even</item></tal:block></test>';
 
-$flower = Flower.new(:template($template));
+$flower.=another(:template($template));
 
 is $flower.parse(:items([1..4])), $xml~'<test><item id="0">Odd</item><item id="1">Even</item><item id="2">Odd</item><item id="3">Even</item></test>', 'repeat with odd and even conditionals';
 
 $template = '<test><tal:block tal:repeat="item items"><item tal:condition="repeat/item/start">First</item><item tal:condition="repeat/item/inner">Inner</item><item tal:condition="repeat/item/end" tal:attributes="length repeat/item/length">Last</item></tal:block></test>';
 
-$flower = Flower.new(:template($template));
+$flower.=another(:template($template));
 
 is $flower.parse(:items([1..4])), $xml~'<test><item>First</item><item>Inner</item><item>Inner</item><item length="4">Last</item></test>', 'repeat with start, end, inner and length.';
 
-$template = '<test><tal:block tal:repeat="item items"><item tal:condition="repeat/item/every \'3\'">Every third</item><item tal:condition="repeat/item/never \'3\'">Normal item</item></tal:block></test>';
+$template = '<test><tal:block tal:repeat="item items"><item tal:condition="repeat/item/every \'3\'">Every third</item><item tal:condition="repeat/item/skip \'3\'">Normal item</item></tal:block></test>';
 
-$flower = Flower.new(:template($template));
+$flower.=another(:template($template));
 
-is $flower.parse(:items([1..7])), $xml~'<test><item>Normal item</item><item>Normal item</item><item>Every third</item><item>Normal item</item><item>Normal item</item><item>Every third</item><item>Normal item</item></test>', 'repeat with every and never';
+is $flower.parse(:items([1..7])), $xml~'<test><item>Normal item</item><item>Normal item</item><item>Every third</item><item>Normal item</item><item>Normal item</item><item>Every third</item><item>Normal item</item></test>', 'repeat with every and skip';
 
 $template = '<test><tal:block tal:repeat="item items"><item tal:condition="repeat/item/lt \'3\'">lt 3</item><item tal:condition="repeat/item/gt \'3\'">gt 3</item><item tal:condition="repeat/item/eq \'3\'">the third</item></tal:block></test>';
 
-$flower = Flower.new(:template($template));
+$flower.=another(:template($template));
 
 is $flower.parse(:items([1..5])), $xml~'<test><item>lt 3</item><item>lt 3</item><item>the third</item><item>gt 3</item><item>gt 3</item></test>', 'repeat with gt, lt and eq';
 
