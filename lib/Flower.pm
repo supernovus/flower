@@ -27,6 +27,10 @@ has %!modifiers;
 ## Data, is used to store the replacement data. Is available for modifiers.
 has %.data is rw;
 
+## Default stores the elements in order of parsing.
+## Used to get the 'default' value, and other such stuff.
+has @.elements;
+
 ## Internal class, used for the 'repeat' object.
 class Flower::Repeat {
   has $.index;
@@ -116,7 +120,7 @@ method parse (*%data) {
   }
 
   ## Okay, now let's parse the elements.
-  self!parse-elements($.template.root);
+  self!parse-element($.template.root);
   return ~$.template;
 }
 
@@ -133,8 +137,9 @@ method !parse-elements ($xml is rw) {
     if $i == $xml.nodes.elems { last; }
     my $element = $xml.nodes[$i];
     if $element !~~ Exemel::Element { next; } # skip non-elements.
-    %.data<default> = $element.nodes;         # the 'default' keyword.
+    @.elements.unshift: $element; ## Stuff the newest element into place.
     self!parse-element($element);
+    @.elements.shift; ## and remove it again.
     ## Now we clean up removed elements, and insert replacements.
     if ! defined $element {
       $xml.nodes.splice($i--, 1);
@@ -195,10 +200,13 @@ method !parse-condition ($xml is rw, $tag) {
 }
 
 method !parse-content ($xml is rw, $tag) {
-  $xml.nodes.splice;
   my $node = self.query($xml.attribs{$tag}, :forcexml);
   if defined $node {
-    $xml.nodes.push: $node;
+    if $node === $xml.nodes {} # special case for 'default'.
+    else {
+      $xml.nodes.splice;
+      $xml.nodes.push: $node;
+    }
   }
   $xml.unset: $tag;
 }
@@ -274,6 +282,10 @@ method query ($query is copy, :$noxml, :$forcexml, :$bool, :$noescape is copy) {
   if $query eq 'nothing' { 
     if ($bool) { return False; }
     else       { return '';    }
+  }
+  if $query eq 'default' {
+    my $default = @.elements[0].nodes;
+    return $default;
   }
   if $query ~~ /^ structure \s+ / {
     $query.=subst(/^ structure \s+ /, '');
