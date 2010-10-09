@@ -20,7 +20,7 @@ is $flower.parse(name => 'Flower'), $xml~'<test><upper>A TEST OF FLOWER, IN UPPE
 
 ## test 2
 
-$template = '<test><lower tal:content="lc:string:I AM NOT YELLING"/></test>';
+$template = '<test><lower tal:content="lc:default">I AM NOT YELLING</lower></test>';
 
 $flower.=another(:template($template));
 
@@ -28,7 +28,7 @@ is $flower.parse(), $xml~'<test><lower>i am not yelling</lower></test>', 'lc: mo
 
 ## test 3
 
-$template = '<test><ucfirst tal:replace="ucfirst:string:bob"/></test>';
+$template = '<test><ucfirst tal:replace="ucfirst:\'bob\'"/></test>';
 
 $flower.=another(:template($template));
 

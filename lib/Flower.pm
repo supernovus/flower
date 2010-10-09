@@ -13,8 +13,13 @@ has $!tal-ns   = 'http://xml.zope.org/namespaces/tal';
 has $!metal-ns = 'http://xml.zope.org/namespaces/metal';
 has $!i18n-ns  = 'http://xml.zope.org/namespaces/i18n';
 
+## a restricted set of tags for the root element.
+has @!root-tal-tags = 'define', 'attributes', 'content';
+
+## the normal set of TAL tags for every other element.
 has @!tal-tags = 'define', 'condition', 'repeat', 'attributes', 'content', 'replace', 'omit-tag';
 
+## the tags for METAL processing, not yet implemented.
 has @!metal-tags = 'define-macro', 'use-macro', 'define-slot', 'fill-slot';
 
 ## Override find with a subroutine that can find templates based off
@@ -120,7 +125,7 @@ method parse (*%data) {
   }
 
   ## Okay, now let's parse the elements.
-  self!parse-element($.template.root);
+  self!parse-element($.template.root, @!root-tal-tags);
   return ~$.template;
 }
 
@@ -153,8 +158,8 @@ method !parse-elements ($xml is rw) {
   }
 }
 
-method !parse-element($element is rw) {
-  for @!tal-tags -> $tal {
+method !parse-element($element is rw, @tal-tags = @!tal-tags) {
+  for @tal-tags -> $tal {
     my $tag = $!tal~':'~$tal;
     self!parse-tag($element, $tag, $tal);
     if $element !~~ Exemel::Element { last; } # skip if we changed type.

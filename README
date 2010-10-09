@@ -50,6 +50,11 @@ Status: Flower is currently usable, but there are still plenty of planned
      'lt xx'      the number is less than xx.
      'eq xx'      the number is equal to xx.
      'ne xx'      the number is not equal to xx.
+ * I'm not sure how Petal, PHPTAL or Zope deal with TAL attributes in the
+   root element (the top-most element of the document), but to avoid death,
+   destruction and mayhem, Flower only processes 'define', 'attributes'
+   and 'content' tags on the root element. The rest of the tags are only
+   processed on children of the root.
 
 The above list will be updated as this project is developed, as I'm sure
 other changes will be introduced that will be a gotchya for users of Petal,
