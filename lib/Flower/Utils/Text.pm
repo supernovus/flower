@@ -59,17 +59,10 @@ our sub sub_string ($parent, $query, *%opts) {
 ## E.g.: <div tal:content="printf: '$%0.2f' '2.5'"/>
 ## Returns: <div>$2.50</div>
 our sub print_formatted ($parent, $query, *%opts) {
-  my ($fmtquery, $subquery) = $parent.get-args($query, Nil);
-  if defined $subquery {
-    my $format = $parent.query($fmtquery);
-    my $text = $parent.query($subquery);
-    if $text && $format {
-      my $formatted = sprintf($format, $text);
-      return $parent.process-query($formatted, |%opts);
-    }
-  }
-  else {
-    return $parent.process-query($parent.query($query), |%opts);
+  my ($format, $text) = $parent.get-args(:query, $query, Nil);
+  if defined $text && defined $format {
+    my $formatted = sprintf($format, $text);
+    return $parent.process-query($formatted, |%opts);
   }
 }
 

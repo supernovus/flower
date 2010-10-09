@@ -333,7 +333,7 @@ method process-query($data is copy, :$forcexml, :$noxml, :$noescape, :$bool) {
 ## get-args now supports parameters in the form of ((param name)) for
 ## when you have queries with spaces in them that shouldn't be treated
 ## as strings, like 'a string' does.
-method get-args($string, *@defaults) {
+method get-args($string, :$query, *@defaults) {
   my @result = $string.comb(/ [ \'.*?\' | '(('.*?'))' | \S+ ] /);
   @result>>.=subst(/^'(('/, '');
   @result>>.=subst(/'))'$/, '');
@@ -341,6 +341,13 @@ method get-args($string, *@defaults) {
   my $defs    = @defaults.elems;
   if $results < $defs {
     @result.push: @defaults[$results..$defs-1];
+  }
+  if $query {
+    for @result -> $result is rw {
+      if defined $result {
+        $result = self.query($result);
+      }
+    }
   }
   return @result;
 }
