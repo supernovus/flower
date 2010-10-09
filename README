@@ -67,25 +67,29 @@ If you load modules in the Petal::Utils:: namespace, it will add additional
 modifiers. The following sets are planned for inclusion (at the current time
 there are only a couple available, with a subset of the modifiers):
 
-  - Text*, same as the :text set from Petal::Utils
-  - Logic, same as the :logic set from Petal::Utils
+  - Text, same as the :text set from Petal::Utils
+  - Logic**, same as the :logic set from Petal::Utils
   - List*, same as the :list set from Petal::Utils, plus group: which
     turns a flat Array into a nested Array, where each inner Array has a
     set number of elements in it.
-  - Hash, same as the :hash set from Petal::Utils
-  - Date, similar to the :date set from Petal::Utils, using on DateTime::Utils
+  - Hash**, same as the :hash set from Petal::Utils
+  - Date**, similar to the :date set from Petal::Utils, using on DateTime::Utils
     Not exactly the same, it offers strftime: and rfc: and works on
     DateTime and Date objects in addition to epoch timestamps.
     If you pass a DateTime or Date object without one of these filters you
     will get its standard stringification form (ISO by default.)
-  - Perl**, makes a 'perl:' modifier available, which is the counterpart
+  - Perl, makes a 'perl:' modifier available, which is the counterpart
     to Zope's 'python:' or PHPTAL's 'php:' modifiers.
-  - Debug**, similar to :debug set from Petal::Utils.
+    There are some extra, more dangerous modifiers included, but they
+    are not exported by default, and must be imported manually.
+  - Debug, similar to :debug set from Petal::Utils.
     dump: modifier spits out the .perl representation of the object.
     what: modifier spits out the class name of the object.
 
+Sets with no marks are fully implemented and included with Flower.
 Sets marked with * have been partially implemented and are included with
-the current version of Flower. Sets marked with ** are fully implemented.
+the current version of Flower. Sets marked with ** are not yet started, and
+therefore aren't included with Flower.
 
 The interfaces to the modifiers included with Flower may not be compatible
 with the ones from Petal. For instance in Petal::Utils, you could call
