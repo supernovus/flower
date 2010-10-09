@@ -82,7 +82,19 @@ there are only a couple available, with a subset of the modifiers):
 Sets marked with * have been partially implemented and are included with
 the current version of Flower. Sets marked with ** are fully implemented.
 
-The URI set is not planned for inclusion (feel free to write it if you need it.)
+The interfaces to the modifiers included with Flower may not be compatible
+with the ones from Petal. For instance in Petal::Utils, you could call
+<div tal:replace="substr: $string 2 5 1">
+whereas with Flower::Utils::Text you would use:
+<div tal:replace="substr: 2,5,1 string">
+
+Full documentation for the usage of Flower and the Flower::Utils modifiers
+will be included in the docs/ folder in an upcoming release, until then
+there are comments in the libraries, and test files in t/ that show the
+proper usage.
+
+The URI set from Petal::Utils is not planned for inclusion,
+feel free to write it if you need it.
 I'm sure new exciting libraries will be made adding onto these.
 
 = Author: Timothy Totten

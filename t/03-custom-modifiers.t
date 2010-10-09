@@ -4,20 +4,23 @@
 ## Add a separate set of tests for Flower::Utils::Text, and one
 ## for all modifiers in the DefaultModifiers set.
 
-BEGIN { @*INC.unshift: './lib' }
+BEGIN { 
+  @*INC.unshift: './lib';    ## Standard lib.
+  @*INC.unshift: './t/lib';  ## Test libraries.
+}
 
 use Test;
 use Flower;
-use Flower::Utils::Text;
+use Example::Modifiers;
 
 plan 1;
 
 my $xml = '<?xml version="1.0"?>';
 
-my $template = '<test><upper tal:content="uc:string:A test of ${name}, in uppercase."/></test>';
+my $template = '<test><woah tal:replace="woah:crazy"/></test>';
 my $flower = Flower.new(:template($template));
 
-$flower.add-modifiers(Flower::Utils::Text::all());
+$flower.add-modifiers(Example::Modifiers::all());
 
-is $flower.parse(name => 'Flower'), $xml~'<test><upper>A TEST OF FLOWER, IN UPPERCASE.</upper></test>', 'string: and custom :uc modifiers';
+is $flower.parse(crazy => 'hello world'), $xml~'<test>Woah, hello world, that\'s awesome!</test>', 'custom modifiers';
 
