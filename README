@@ -91,11 +91,11 @@ Sets marked with * have been partially implemented and are included with
 the current version of Flower. Sets marked with ** are not yet started, and
 therefore aren't included with Flower.
 
-The interfaces to the modifiers included with Flower may not be compatible
-with the ones from Petal. For instance in Petal::Utils, you could call
-<div tal:replace="substr: $string 2 5 1">
-whereas with Flower::Utils::Text you would use:
-<div tal:replace="substr: 2,5,1 string">
+The syntax for the Flower::Utils methods is based on the modifiers from
+Petal::Utils, but extended to use the Flower-specific get-opts method, includes
+non whitespace, strings wrapped in 'quotes' and nested queries wrapped in
+((special markers)). The get-opts method is also used when passing parameters
+to object method calls in queries themselves.
 
 Full documentation for the usage of Flower and the Flower::Utils modifiers
 will be included in the docs/ folder in an upcoming release, until then

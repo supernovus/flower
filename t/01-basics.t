@@ -5,7 +5,9 @@ BEGIN { @*INC.unshift: './lib' }
 use Test;
 use Flower;
 
-plan 9;
+plan 10;
+
+sub attrmake (*@opts) { @opts.join(' ') | @opts.reverse.join(' ') }
 
 my $xml = '<?xml version="1.0"?>';
 
@@ -44,11 +46,9 @@ is $flower.parse(hello => 'hello world'), $xml~'<test>Good Day Mate</test>', 'ta
 
 $template = '<test><attrib tal:attributes="hello hello; cya goodbye"/></test>';
 $flower.=another(:template($template));
-my $matched = False;
-my $output = $flower.parse(hello => 'Hello World', goodbye => 'Goodbye Universe');
-if $output eq $xml~'<test><attrib hello="Hello World" cya="Goodbye Universe"/></test>' { $matched = True; }
-elsif $output eq $xml~'<test><attrib cya="Goodbye Universe" hello="Hello World"/></test>' { $matched = True; }
-ok $matched, 'tal:attributes';
+my $attrpos = attrmake 'hello="Hello World"', 'cya="Goodbye Universe"';
+is $flower.parse(hello => 'Hello World', goodbye => 'Goodbye Universe'),
+   $xml~'<test><attrib '~$attrpos~'/></test>', 'tal:attributes';
 
 ## test 7
 
@@ -67,4 +67,20 @@ is $flower.parse(test=>'Hello World'), $xml~'<test xmlns:petal="http://xml.zope.
 $template = '<test tal:attributes="id id">Test document</test>';
 $flower.=another(:template($template));
 is $flower.parse(id=>'first'), $xml~'<test id="first">Test document</test>', 'attributes on root document';
+
+## test 10
+
+my @options = (
+  { value => 'a', label => 'Option 1' },
+  { value => 'b', label => 'Option 2', selected => 'selected' },
+  { value => 'c', label => 'Option 3' },
+);
+
+$template = '<select><option tal:repeat="option options" tal:attributes="value option/value; selected option/selected" tal:content="option/label"/></select>';
+
+$flower.=another(:template($template));
+
+$attrpos = attrmake 'value="b"', 'selected="selected"';
+
+is $flower.parse(options => @options), $xml~'<select><option value="a">Option 1</option><option '~$attrpos~'>Option 2</option><option value="c">Option 3</option></select>', 'attributes with undefined value';
 

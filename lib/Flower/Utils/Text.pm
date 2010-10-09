@@ -43,29 +43,27 @@ our sub uc_first ($parent, $query, *%opts) {
 ## E.g.: <div tal:content="substr: 3,5 'theendoftheworld'"/>
 ## Returns: <div>endof</div>
 our sub sub_string ($parent, $query, *%opts) {
-  my ($params, $subquery) = $query.split(/\s+/, 2);
-  my @params = $params.split(',');
+  my ($subquery, $start, $chars, $ellipsis) = 
+    $parent.get-args($query, 0, Nil, Nil);
   my $text = $parent.query($subquery);
   if defined $text {
-    my $substr = $text.substr(|@params[0..1]);
-    if @params.elems gt 2 && @params[2] {
+    my $substr = $text.substr($start, $chars);
+    if $ellipsis {
       $substr ~= '...';
     }
     return $parent.process-query($substr, |%opts);
   }
 }
 
-## Usage:  printf: 'format' varname/path
-## The format needs to be surrounded by ' ' marks.
+## Usage:  printf: format varname/path
 ## E.g.: <div tal:content="printf: '$%0.2f' '2.5'"/>
 ## Returns: <div>$2.50</div>
 our sub print_formatted ($parent, $query, *%opts) {
-  my regex stringparam { ^ \'(.*?)\' \s+ }
-  if ($query ~~ /<stringparam=&stringparam>/) {
-    my $format = $/<stringparam>[0];
-    my $subquery = $query.subst(/<&stringparam>/, '');
+  my ($fmtquery, $subquery) = $parent.get-args($query, Nil);
+  if defined $subquery {
+    my $format = $parent.query($fmtquery);
     my $text = $parent.query($subquery);
-    if $text {
+    if $text && $format {
       my $formatted = sprintf($format, $text);
       return $parent.process-query($formatted, |%opts);
     }

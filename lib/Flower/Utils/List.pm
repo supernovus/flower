@@ -17,7 +17,7 @@ our sub array_sort ($parent, $query, *%opts) {
 }
 
 our sub array_group ($parent, $query, *%opts) {
-  my ($num, $subquery) = $query.split(/\s+/, 2);
+  my ($subquery, $num) = $parent.get-args($query, 1);
   my $array = $parent.query($subquery);
   if $array ~~ Array {
     my @nest = ([]);

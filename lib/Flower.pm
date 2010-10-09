@@ -330,6 +330,21 @@ method process-query($data is copy, :$forcexml, :$noxml, :$noescape, :$bool) {
   return $data;
 }
 
+## get-args now supports parameters in the form of ((param name)) for
+## when you have queries with spaces in them that shouldn't be treated
+## as strings, like 'a string' does.
+method get-args($string, *@defaults) {
+  my @result = $string.comb(/ [ \'.*?\' | '(('.*?'))' | \S+ ] /);
+  @result>>.=subst(/^'(('/, '');
+  @result>>.=subst(/'))'$/, '');
+  my $results = @result.elems - 1;
+  my $defs    = @defaults.elems;
+  if $results < $defs {
+    @result.push: @defaults[$results..$defs-1];
+  }
+  return @result;
+}
+
 ## This handles the lookups for query().
 method !lookup (@paths is copy, $data) {
   my $path = @paths.shift;
@@ -346,7 +361,7 @@ method !lookup (@paths is copy, $data) {
       }
     }
     default {
-      my ($command, *@args) = $path.comb(/ [ \'.*?\' | \S+ ] /); #split(/\s+/);
+      my ($command, *@args) = self.get-args($path);
       if .can($command) {
         ## Let's query those arguments.
         for @args -> $arg is rw {

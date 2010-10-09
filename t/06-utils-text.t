@@ -5,7 +5,7 @@ BEGIN { @*INC.unshift: './lib' }
 use Test;
 use Flower;
 
-plan 6;
+plan 7;
 
 my $xml = '<?xml version="1.0"?>';
 
@@ -36,7 +36,7 @@ is $flower.parse(), $xml~'<test>Bob</test>', 'ucfirst: modifier';
 
 ## test 4
 
-$template = '<test><substr tal:replace="substr:3,5 \'theendoftheworld\'"/></test>';
+$template = '<test><substr tal:replace="substr:\'theendoftheworld\' 3 5"/></test>';
 
 $flower.=another(:template($template));
 
@@ -44,13 +44,20 @@ is $flower.parse(), $xml~'<test>endof</test>', 'substr: modifier';
 
 ## test 5
 
-$template = '<test><substr tal:replace="substr:3,5,1 \'theendoftheworld\'"/></test>';
+$template = '<test><substr tal:replace="substr:\'theendoftheworld\' 3 5 1"/></test>';
 
 $flower.=another(:template($template));
 
 is $flower.parse(), $xml~'<test>endof...</test>', 'substr: modifier with ellipsis';
 
 ## test 6
+
+$template = '<test><substr tal:replace="substr:\'theendoftheworld\' 3"/></test>';
+$flower.=another(:template($template));
+
+is $flower.parse(), $xml~'<test>endoftheworld</test>', 'substr: modifier without length';
+
+## test 7
 
 $template = '<test><printf tal:replace="printf: \'$%0.2f\' \'2.5\'"/></test>';
 

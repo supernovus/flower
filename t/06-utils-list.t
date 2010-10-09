@@ -9,7 +9,7 @@ plan 2;
 
 my $xml = '<?xml version="1.0"?>';
 
-my $template = '<table><tr tal:repeat="row group:2 items"><td tal:repeat="col row" tal:content="col"/></tr></table>';
+my $template = '<table><tr tal:repeat="row group:items 2"><td tal:repeat="col row" tal:content="col"/></tr></table>';
 
 my $flower = Flower.new(:template($template));
 
