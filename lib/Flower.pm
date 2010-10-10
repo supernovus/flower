@@ -330,24 +330,50 @@ method process-query($data is copy, :$forcexml, :$noxml, :$noescape, :$bool) {
   return $data;
 }
 
-## get-args now supports parameters in the form of ((param name)) for
-## when you have queries with spaces in them that shouldn't be treated
+## get-args now supports parameters in the form of {{param name}} for
+## when you have nested queries with spaces in them that shouldn't be treated
 ## as strings, like 'a string' does.
-method get-args($string, :$query, *@defaults) {
-  my @result = $string.comb(/ [ \'.*?\' | '(('.*?'))' | \S+ ] /);
-  @result>>.=subst(/^'(('/, '');
-  @result>>.=subst(/'))'$/, '');
+## It also supports named parameters in the form of :param(value).
+## If the :query option is set, all found parameters will be looked up using
+## the query() method (with default options.)
+## If you specify the :named option, it will always include the %named
+## parameter, even if it's empty.
+method get-args($string, :$query, :$named, *@defaults) {
+  my @result = 
+    $string.comb(/ [ '{{'.*?'}}' | ':'\w+'('.*?')' | \'.*?\' | \S+ ] /);
+  @result>>.=subst(/^'{{'/, '');
+  @result>>.=subst(/'}}'$/, '');
+  my %named;
+  ## Our nice for loop has been replaced now that we support named
+  ## parameters. Oh well, such is life.
+  loop (my $i=0; $i < @result.elems; $i++) {
+    my $param = @result[$i];
+    if $param ~~ /^ ':' (\w+) '(' (.*?) ')' $/ {
+      my $key = ~$0;
+      my $val = ~$1;
+      if $query { $val = self.query($val); }
+      %named{$key} = $val;
+      @result.splice($i, 1);
+      if $i < @result.elems {
+        $i--;
+      }
+    }
+    else {
+      if $query {
+        @result[$i] = self.query($param);
+      }
+    }
+  }
+
   my $results = @result.elems - 1;
   my $defs    = @defaults.elems;
+
   if $results < $defs {
     @result.push: @defaults[$results..$defs-1];
   }
-  if $query {
-    for @result -> $result is rw {
-      if defined $result {
-        $result = self.query($result);
-      }
-    }
+  ## Named params are always last.
+  if ($named || (%named.elems > 0)) {
+    @result.push: %named;
   }
   return @result;
 }
