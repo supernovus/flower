@@ -1,36 +1,36 @@
 module Flower::Utils::Text;
 
-our sub all() {
+our sub export() {
   my %modifiers = {
-    uppercase => &upper,
-    upper     => &upper,
-    'uc'      => &upper,
-    lowercase => &lower,
-    lower     => &lower,
-    'lc'      => &lower,
-    'ucfirst' => &uc_first,
-    uc_first  => &uc_first,
-    'substr'  => &sub_string,
-    'printf'  => &print_formatted,
-    'sprintf' => &print_formatted,
+    uppercase => &text_uc,
+    upper     => &text_uc,
+    'uc'      => &text_uc,
+    lowercase => &text_lc,
+    lower     => &text_lc,
+    'lc'      => &text_lc,
+    'ucfirst' => &text_ucfirst,
+    uc_first  => &text_ucfirst,
+    'substr'  => &text_substr,
+    'printf'  => &text_printf,
+    'sprintf' => &text_printf,
   };
   return %modifiers;
 }
 
 ## Usage:  uc: varname
-our sub upper ($parent, $query, *%opts) {
+our sub text_uc ($parent, $query, *%opts) {
   my $result = $parent.query($query);
   return $parent.process-query($result.uc, |%opts);
 }
 
 ## Usage:  lc: varname
-our sub lower ($parent, $query, *%opts) {
+our sub text_lc ($parent, $query, *%opts) {
   my $result = $parent.query($query);
   return $parent.process-query($result.lc, |%opts);
 }
 
 ## Usage:  ucfirst: varname
-our sub uc_first ($parent, $query, *%opts) {
+our sub text_ucfirst ($parent, $query, *%opts) {
   my $result = $parent.query($query);
   return $parent.process-query($result.ucfirst, |%opts);
 }
@@ -42,7 +42,7 @@ our sub uc_first ($parent, $query, *%opts) {
 ##  and if 3 is true add an ellipsis (...) to the end.
 ## E.g.: <div tal:content="substr: 3,5 'theendoftheworld'"/>
 ## Returns: <div>endof</div>
-our sub sub_string ($parent, $query, *%opts) {
+our sub text_substr ($parent, $query, *%opts) {
   my ($subquery, $start, $chars, $ellipsis) = 
     $parent.get-args($query, 0, Nil, Nil);
   my $text = $parent.query($subquery);
@@ -58,7 +58,7 @@ our sub sub_string ($parent, $query, *%opts) {
 ## Usage:  printf: format varname/path
 ## E.g.: <div tal:content="printf: '$%0.2f' '2.5'"/>
 ## Returns: <div>$2.50</div>
-our sub print_formatted ($parent, $query, *%opts) {
+our sub text_printf ($parent, $query, *%opts) {
   my ($format, $text) = $parent.get-args(:query, $query, Nil);
   if defined $text && defined $format {
     my $formatted = sprintf($format, $text);

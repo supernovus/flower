@@ -2,13 +2,13 @@ module Flower::Utils::Date;
 
 use DateTime::Utils;
 
-our sub all() {
+our sub export() {
   my %modifiers = {
-    'date'     => &make_date,
+    'date'     => &date_new,
     'time'     => &date_time,
-    'strftime' => &strf_time,
-    'rfc'      => &format_rfc,
-    'now'      => &datetime_now,
+    'strftime' => &date_format,
+    'rfc'      => &date_format_rfc,
+    'now'      => &date_format_now,
   };
   return %modifiers;
 }
@@ -19,7 +19,7 @@ our sub all() {
 ## '-0800' would represent a timezone that is 8 hours behind UTC.
 ## '+0430' would represent a timezone that is 4 hours and 30 minutes ahead.
 
-our sub make_date ($parent, $query, *%opts) {
+our sub date_new ($parent, $query, *%opts) {
   my ($year, $month, $day, $hour, $minute, $second, %params) =
     $parent.get-args(:query, :named, $query, 1, 1, 0, 0, 0);
   if defined $year {
@@ -55,7 +55,7 @@ our sub date_time ($parent, $query, *%opts) {
 ## or epoch integers, UTC will be used. DateTime objects will
 ## use their existing timezones.
 
-our sub strf_time ($parent, $query, *%opts) {
+our sub date_format ($parent, $query, *%opts) {
   my ($format, $date, $timezone) = 
     $parent.get-args(:query, $query, DateTime.now(), Nil);
   if defined $format && defined $date {
@@ -88,7 +88,7 @@ our sub strf_time ($parent, $query, *%opts) {
 ## <div tal:content="strftime: rfc: {{date: 2010 10 10 :tz('-0800')}}"/>
 ## Will return <div>Sun, 10 Oct 2010 00:00:00 -0800</div>
 
-our sub format_rfc ($parent, $query, *%opts) {
+our sub date_format_rfc ($parent, $query, *%opts) {
   return '%a, %d %b %Y %T %z';
 }
 
@@ -100,7 +100,7 @@ our sub format_rfc ($parent, $query, *%opts) {
 ## <div tal:content="strftime: rfc: now: '-0800'"/>
 ## Will return the current time in RFC format, in the -0800 timezone.
 
-our sub datetime_now ($parent, $query, *%opts) {
+our sub date_format_now ($parent, $query, *%opts) {
   return DateTime.now();
 }
 

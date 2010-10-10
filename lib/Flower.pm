@@ -87,7 +87,7 @@ method new (:$find is copy, :$file, :$template is copy) {
       die "invalid template type passed.";
     }
   }
-  my %modifiers = Flower::DefaultModifiers::all();
+  my %modifiers = Flower::DefaultModifiers::export();
   self.bless(*, :$template, :$find, :%modifiers);
 }
 
@@ -332,17 +332,27 @@ method process-query($data is copy, :$forcexml, :$noxml, :$noescape, :$bool) {
 
 ## get-args now supports parameters in the form of {{param name}} for
 ## when you have nested queries with spaces in them that shouldn't be treated
-## as strings, like 'a string' does.
+## as strings, like 'a string' does. It also captures ${vars} and does no
+## processing on them unless you are using string processing (see below.)
 ## It also supports named parameters in the form of :param(value).
 ## If the :query option is set, all found parameters will be looked up using
 ## the query() method (with default options.)
+## If :query is set to a Hash, then the keys of the Hash represent positional
+## parameters (the first positional parameter is 0 not 1.)
+## the value represents an action to take, if it is 0, then no querying or
+## parsing is done on the value. If it is 1, then the value is parsed as a
+## string with any ${name} variables queried.
+## If you set :query to the string 'string' then ALL parameters will be
+## parsed as strings (replacing any ${name} vars in the strings).
+## so :query({0=>0, 3=>0}) would query all parameters except the 1st and 4th.
 ## If you specify the :named option, it will always include the %named
 ## parameter, even if it's empty.
 method get-args($string, :$query, :$named, *@defaults) {
   my @result = 
-    $string.comb(/ [ '{{'.*?'}}' | ':'\w+'('.*?')' | \'.*?\' | \S+ ] /);
+    $string.comb(/ [ '{{'.*?'}}' | '${'.*?'}' | '$('.*?')' | ':'\w+'('.*?')' | \'.*?\' | \S+ ] /);
   @result>>.=subst(/^'{{'/, '');
   @result>>.=subst(/'}}'$/, '');
+  @result>>.=subst(:g, /'$('(.*?)')'/, -> $/ { '${'~$0~'}' });
   my %named;
   ## Our nice for loop has been replaced now that we support named
   ## parameters. Oh well, such is life.
@@ -351,7 +361,7 @@ method get-args($string, :$query, :$named, *@defaults) {
     if $param ~~ /^ ':' (\w+) '(' (.*?) ')' $/ {
       my $key = ~$0;
       my $val = ~$1;
-      if $query { $val = self.query($val); }
+      if $query { $val = self!parse-rules($query, $key, $val); }
       %named{$key} = $val;
       @result.splice($i, 1);
       if $i < @result.elems {
@@ -359,9 +369,7 @@ method get-args($string, :$query, :$named, *@defaults) {
       }
     }
     else {
-      if $query {
-        @result[$i] = self.query($param);
-      }
+      if $query { @result[$i] = self!parse-rules($query, $i, $param); }
     }
   }
 
@@ -376,6 +384,27 @@ method get-args($string, :$query, :$named, *@defaults) {
     @result.push: %named;
   }
   return @result;
+}
+
+method !parse-rules ($rules, $tag, $value) {
+  if $rules ~~ Hash && $rules.exists($tag) {
+    if $rules{$tag} {
+      return self.parse-string($value);
+    }
+    else {
+      return $value;
+    }
+  }
+  elsif $rules ~~ Str && $rules eq 'string' {
+    return self.parse-string($value);
+  }
+  else {
+    return self.query($value);
+  }
+}
+
+method parse-string ($string) {
+  $string.subst(:g, rx/'${' (.*?) '}'/, -> $/ { self.query($0) });
 }
 
 ## This handles the lookups for query().
@@ -394,12 +423,8 @@ method !lookup (@paths is copy, $data) {
       }
     }
     default {
-      my ($command, *@args) = self.get-args($path);
+      my ($command, *@args) = self.get-args(:query({0=>0}), $path);
       if .can($command) {
-        ## Let's query those arguments.
-        for @args -> $arg is rw {
-            $arg = self.query($arg);
-        }
         $found = ."$command"(|@args);
       }
       else {
@@ -414,16 +439,29 @@ method !lookup (@paths is copy, $data) {
 }
 
 ## Add a single modifier routine.
+## Example:
+##  use Flower;
+##  use Flower::Utils::Perl;
+##  my $flower = Flower.new(:file('template.xml'));
+##  $flower.add-modifier('evil', &Flower::Utils::Perl::perl_execute);
+##
 method add-modifier($name, Callable $routine) {
   %!modifiers{$name} = $routine;
 }
 
 ## Add a bunch of modifiers, mainly used for plugin libraries.
+## Expects a Hash, where the key is the name of the modifier, and the
+## value is a subroutine reference.
 ## Example:
 ##  use Flower;
 ##  use Flower::Utils::Logic;
+##  use Flower::Utils::List;
+##  my %mods = Flower::Utils::Logic::export();
+##  %mods<sort> = &Flower::Utils::List::list_sort;
 ##  my $flower = Flower.new(:file('template.xml'));
-##  $flower.add-modifiers(Flower::Utils::Logic::all());
+##  $flower.add-modifiers(%mods);
+##
+##  Now $flower has all Logic modifiers, plus 'sort'.
 ##
 multi method add-modifiers(%modifiers) {
   for %modifiers.kv -> $key, $val {
@@ -432,10 +470,18 @@ multi method add-modifiers(%modifiers) {
 }
 
 ## The newest method for loading modifiers.
-## Pass it a list of libraries which have all() subs
-## and it will load them.
+## Pass it a list of libraries which have export() subs
+## and it will load them dynamically. The export() sub must
+## return a Hash usable by the add-modifiers() method.
 ## If the library name doesn't have a :: in it,
 ## load-modifiers prepends "Flower::Utils::" to it.
+## Example:
+##  use Flower;
+##  my $flower = Flower.new(:file('template.xml'));
+##  $flower.load-modifiers('Text', 'Date', 'My::Modifiers');
+##
+##  Example will load File::Utils::Text, File::Utils::Date and My::Modifiers.
+##
 multi method load-modifiers(*@modules) {
   for @modules -> $module {
     my $plugin = $module;
@@ -443,7 +489,7 @@ multi method load-modifiers(*@modules) {
       $plugin = "Flower::Utils::$plugin";
     }
     eval("use $plugin");
-    self.add-modifiers(eval($plugin~'::all()'));
+    self.add-modifiers(eval($plugin~'::export()'));
   }
 }
 

@@ -1,8 +1,10 @@
 module Flower::DefaultModifiers;
 
-our sub all() {
+our sub export() {
   my %modifiers = {
+    str    => &string,
     string => &string,
+    is     => &true,
     true   => &true,
     false  => &false,
     'not'  => &false,
@@ -22,9 +24,7 @@ our sub false ($parent, $query, *%opts) {
 }
 
 our sub string ($parent, $query, *%opts) {
-  my $string = $query;
-#  $string ~~ s:g/ '${' (.*?) '}' / $parent.query($0) /; # NYI in rakudo.
-  $string.=subst(:g, rx/'${' (.*?) '}'/, -> $/ { $parent.query($0) });
+  my $string = $parent.parse-string($query);
   return $parent.process-query($string, |%opts);
 }
 

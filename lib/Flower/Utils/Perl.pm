@@ -8,7 +8,7 @@ module Flower::Utils::Perl;
 ## This is a dangerous library, know what you are doing before you enable this.
 ## There's only so much that can be filtered out, so be careful.
 
-our sub all() {
+our sub export() {
   my %modifiers = {
     perl  => &perl_query,
   };

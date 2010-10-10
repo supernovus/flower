@@ -1,18 +1,18 @@
 module Flower::Utils::List;
 
-our sub all() {
+our sub export() {
   my %modifiers = {
-    group     => &array_group,
-    'sort'    => &array_sort,
-    'reverse' => &array_reverse,
-    limit     => &array_limit,
-    shuffle   => &array_pick,
-    pick      => &array_pick,
+    group     => &list_group,
+    'sort'    => &list_sort,
+    'reverse' => &list_reverse,
+    limit     => &list_limit,
+    shuffle   => &list_pick,
+    pick      => &list_pick,
   };
   return %modifiers;
 }
 
-our sub array_sort ($parent, $query, *%opts) {
+our sub list_sort ($parent, $query, *%opts) {
   my $array = $parent.query($query);
   if $array ~~ Array {
     my @newarray = $array.sort;
@@ -20,9 +20,8 @@ our sub array_sort ($parent, $query, *%opts) {
   }
 }
 
-our sub array_group ($parent, $query, *%opts) {
-  my ($subquery, $num) = $parent.get-args($query, 1);
-  my $array = $parent.query($subquery);
+our sub list_group ($parent, $query, *%opts) {
+  my ($array, $num) = $parent.get-args(:query({1=>1}), $query, 1);
   if $array ~~ Array {
     my @nest = ([]);
     my $level = 0;
@@ -39,27 +38,28 @@ our sub array_group ($parent, $query, *%opts) {
   }
 }
 
-our sub array_limit ($parent, $query, %*opts) {
-  my ($subquery, $num) = $parent.get-args($query, 1);
-  my $array = $parent.query($subquery);
+our sub list_limit ($parent, $query, *%opts) {
+  my ($array, $num) = $parent.get-args(:query({1=>1}), $query, 1);
   if $array ~~ Array {
     my $count = $num - 1;
-    return $array[0..$count];
+    my @return = $array[0..$count];
+    return @return;
   }
 }
 
-our sub array_pick ($parent, $query, %*opts) {
-  my ($subquery, $num) = $parent.get-args($query, *);
-  my $array = $parent.query($subquery);
+our sub list_pick ($parent, $query, *%opts) {
+  my ($array, $num) = $parent.get-args(:query({1=>1}), $query, *);
   if $array ~~ Array {
-    return $array.pick($num);
+    my @return = $array.pick($num);
+    return @return;
   }
 }
 
-our sub array_reverse ($parent, $query, %*opts) {
+our sub list_reverse ($parent, $query, *%opts) {
   my $array = $parent.query($query);
   if $array ~~ Array {
-    return $array.reverse;
+    my @return = $array.reverse;
+    return @return;
   }
 }
 

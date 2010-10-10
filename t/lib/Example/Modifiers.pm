@@ -1,6 +1,6 @@
 module Example::Modifiers;
 
-our sub all() {
+our sub export() {
   my %modifiers = {
     woah => &woahize,
   };
