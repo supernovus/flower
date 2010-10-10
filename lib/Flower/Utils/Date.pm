@@ -21,7 +21,10 @@ our sub export() {
 
 our sub date_new ($parent, $query, *%opts) {
   my ($year, $month, $day, $hour, $minute, $second, %params) =
-    $parent.get-args(:query, :named, $query, 1, 1, 0, 0, 0);
+    $parent.get-args(
+      :query({'.STRING'=>1, 'tz' => 1}), 
+      :named, $query, 1, 1, 0, 0, 0
+    );
   if defined $year {
     my $timezone = 0;
     if %params.exists('tz') && %params<tz> ~~ Str {

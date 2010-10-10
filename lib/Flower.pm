@@ -342,8 +342,8 @@ method process-query($data is copy, :$forcexml, :$noxml, :$noescape, :$bool) {
 ## the value represents an action to take, if it is 0, then no querying or
 ## parsing is done on the value. If it is 1, then the value is parsed as a
 ## string with any ${name} variables queried.
-## If you set :query to the string 'string' then ALL parameters will be
-## parsed as strings (replacing any ${name} vars in the strings).
+## If there is a key called .STRING in the query Hash, then parsing as
+## strings becomes default, and keys with a value of 1 parse as normal queries.
 ## so :query({0=>0, 3=>0}) would query all parameters except the 1st and 4th.
 ## If you specify the :named option, it will always include the %named
 ## parameter, even if it's empty.
@@ -387,19 +387,30 @@ method get-args($string, :$query, :$named, *@defaults) {
 }
 
 method !parse-rules ($rules, $tag, $value) {
+  my $stringy = False;
+  if $rules ~~ Hash && $rules.exists('.STRING') {
+    $stringy = True;
+  }
   if $rules ~~ Hash && $rules.exists($tag) {
     if $rules{$tag} {
-      return self.parse-string($value);
+      if $stringy {
+        return self.query($value);
+      }
+      else {
+        return self.parse-string($value);
+      }
     }
     else {
       return $value;
     }
   }
-  elsif $rules ~~ Str && $rules eq 'string' {
-    return self.parse-string($value);
-  }
   else {
-    return self.query($value);
+    if $stringy {
+      return self.parse-string($value);
+    }
+    else {
+      return self.query($value);
+    }
   }
 }
 
@@ -463,7 +474,7 @@ method add-modifier($name, Callable $routine) {
 ##
 ##  Now $flower has all Logic modifiers, plus 'sort'.
 ##
-multi method add-modifiers(%modifiers) {
+method add-modifiers(%modifiers) {
   for %modifiers.kv -> $key, $val {
     self.add-modifier($key, $val);
   }
@@ -482,14 +493,17 @@ multi method add-modifiers(%modifiers) {
 ##
 ##  Example will load File::Utils::Text, File::Utils::Date and My::Modifiers.
 ##
-multi method load-modifiers(*@modules) {
+method load-modifiers(*@modules) {
   for @modules -> $module {
     my $plugin = $module;
     if $plugin !~~ /'::'/ {
       $plugin = "Flower::Utils::$plugin";
     }
     eval("use $plugin");
-    self.add-modifiers(eval($plugin~'::export()'));
+    if defined $! { die "use failed: $!"; }
+    my $modifiers = eval($plugin~'::export()');
+    if defined $! { die "export failed: $!"; }
+    self.add-modifiers($modifiers);
   }
 }
 
