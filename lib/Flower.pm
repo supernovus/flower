@@ -70,7 +70,9 @@ method new (:$find is copy, :$file, :$template is copy) {
     }
   }
   if $file {
-    my $filename = $find($file);
+    my $filename;
+    if ($file.IO ~~ :f) { $filename = $file; }
+    else { $filename = $find($file); }
     $template = Exemel::Document.parse(slurp($filename));
   }
   else {

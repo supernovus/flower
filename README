@@ -100,7 +100,7 @@ In addition, the following sets are planned for inclusion very soon:
   - Hash, same as the :hash set from Petal::Utils
 
 The syntax for the Flower::Utils methods is based on the modifiers from
-Petal::Utils, but extended to use the Flower-specific get-opts method (the
+Petal::Utils, but extended to use the Flower-specific extensions (the
 same method that is used to parse method call parameters in queries.)
 As is obvious, the syntax is not always the same, and not all of the
 modifiers are the same.
