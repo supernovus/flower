@@ -323,8 +323,16 @@ method process-query($data is copy, :$forcexml, :$noxml, :$noescape, :$bool) {
     $data.=subst('"', '&quot;', :g);
   }
   ## Default rule for forcexml converts non-XML objects into Exemel::Text.
-  if ($forcexml && $data !~~ Exemel) {
-    return Exemel::Text.new(:text(~$data));
+  if ($forcexml) {
+    if ($data ~~ Array) {
+      for @($data) -> $elm is rw {
+        if $elm !~~ Exemel { $elm = Exemel::Text.new(:text(~$elm)); }
+      }
+      return $data;
+    }
+    elsif ($data !~~ Exemel) {
+      return Exemel::Text.new(:text(~$data));
+    }
   }
   elsif ($noxml && $data !~~ Str|Numeric) {
     return; ## With noxml set, we only accept Strings or Numbers.
