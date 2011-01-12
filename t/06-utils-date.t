@@ -5,7 +5,7 @@ BEGIN { @*INC.unshift: './lib' }
 use Test;
 use Flower;
 
-plan 7;
+plan 10;
 
 my $xml = '<?xml version="1.0"?>';
 
@@ -23,19 +23,19 @@ my %date = {
 
 ## test 1
 
-my $template = '<date tal:content="date: 2010 10 10"/>';
+my $template = '<date tal:content="dateof: 2010 10 10"/>';
 my $flower = Flower.new(:template($template));
 
 $flower.load-modifiers('Date');
 
-is $flower.parse(), $xml~'<date>2010-10-10T00:00:00Z</date>', 'date: modifier';
+is $flower.parse(), $xml~'<date>2010-10-10T00:00:00Z</date>', 'dateof: modifier';
 
 ## test 2
 
-$template = '<date tal:content="date: ${date/year} ${date/month} ${date/day}"/>';
+$template = '<date tal:content="dateof: ${date/year} ${date/month} ${date/day}"/>';
 $flower.=another(:template($template));
 
-is $flower.parse(:date(%date)), $xml~'<date>2010-10-10T00:00:00Z</date>', 'date: modifier using string parsing';
+is $flower.parse(:date(%date)), $xml~'<date>2010-10-10T00:00:00Z</date>', 'dateof: modifier using string parsing';
 
 ## test 3
 
@@ -60,7 +60,7 @@ is $flower.parse(:date(%date)), $xml~'<date>Oct 09, 2010</date>', 'strftime: mod
 
 ## test 6
 
-$template = "<date tal:content=\"strftime: rfc: \{\{date: 2010 10 10 :tz('-0800')}}\"/>";
+$template = "<date tal:content=\"strftime: rfc: \{\{dateof: 2010 10 10 :tz('-0800')}}\"/>";
 $flower.=another(:template($template));
 
 is $flower.parse(), $xml~'<date>Sun, 10 Oct 2010 00:00:00 -0800</date>', 'strftime: with rfc: modifier';
@@ -72,4 +72,25 @@ my $now = Date.today();
 $flower.=another(:template($template));
 
 is $flower.parse(), $xml~'<date>'~$now~'</date>', 'strftime: with now: modifier';
+
+## test 8
+
+$template = '<date tal:content="date: \'2011-01-12T15:15:00-0800\'"/>';
+$flower.=another(:template($template));
+
+is $flower.parse(:date(%date)), $xml~'<date>2011-01-12T15:15:00-0800</date>', 'date: modifier';
+
+## test 9
+$template = '<date tal:content="strftime: \'%b %d, %Y\' {{date: \'2011-01-12T15:15:00-0800\'}}"/>';
+$flower.=another(:template($template));
+
+is $flower.parse(:date(%date)), $xml~'<date>Jan 12, 2011</date>', 'strftime: with date: modifier';
+
+## test 10
+
+$template = '<date tal:content="strftime: \'%b %d, %Y\' \'2011-01-12T15:15:00-0800\'"/>';
+$flower.=another(:template($template));
+
+is $flower.parse(:date(%date)), $xml~'<date>Jan 12, 2011</date>', 'strftime: with iso date string';
+
 

@@ -4,7 +4,8 @@ use DateTime::Utils;
 
 our sub export() {
   my %modifiers = {
-    'date'     => &date_new,
+    'date'     => &date_string,
+    'dateof'   => &date_new,
     'time'     => &date_time,
     'strftime' => &date_format,
     'rfc'      => &date_format_rfc,
@@ -13,8 +14,8 @@ our sub export() {
   return %modifiers;
 }
 
-## date: modifier, Creates a DateTime object with the given spec.
-## Usage:  date: year [month] [day] [hour] [minute] [second] :tz(timezone)
+## dateof: modifier, Creates a DateTime object with the given spec.
+## Usage:  dateof: year [month] [day] [hour] [minute] [second] :tz(timezone)
 ## The named paramter 'tz' must be specified in the common ISO offset format,
 ## '-0800' would represent a timezone that is 8 hours behind UTC.
 ## '+0430' would represent a timezone that is 4 hours and 30 minutes ahead.
@@ -37,6 +38,14 @@ our sub date_new ($parent, $query, *%opts) {
     );
     return $parent.process-query($dt, |%opts);
   }
+}
+
+## date: modifier, Creates a DateTime object based on an ISO datetime stamp.
+
+our sub date_string ($parent, $query, *%opts) {
+  my $dtstring = $parent.query($query);
+  my $dt = DateTime.new(~$dtstring);
+  return $parent.process-query($dt, |%opts);
 }
 
 ## time: modifier, Creates a DateTime object based on an epoch integer/string.
@@ -79,6 +88,10 @@ our sub date_format ($parent, $query, *%opts) {
       }
       elsif $date ~~ Int {
         $return = strftime($format, DateTime.new($date, :$timezone));
+      }
+      elsif $date ~~ Str {
+        ## We assume in the case of Str, the timezone is in the string.
+        $return = strftime($format, DateTime.new($date));
       }
     }
   }
