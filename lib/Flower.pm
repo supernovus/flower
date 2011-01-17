@@ -19,8 +19,13 @@ has @!root-tal-tags = 'define', 'attributes', 'content';
 ## the normal set of TAL tags for every other element.
 has @!tal-tags = 'define', 'condition', 'repeat', 'attributes', 'content', 'replace', 'omit-tag';
 
-## the tags for METAL processing, not yet implemented.
-has @!metal-tags = 'define-macro', 'use-macro', 'define-slot', 'fill-slot';
+## the tags for METAL macro processing.
+## TODO: define-slot and use-slot.
+## ----  Most likely to be implemented in the specific handlers.
+has @!metal-tags = 'define-macro', 'use-macro';
+
+## The cache for METAL macros. Is available for modifiers.
+has %.metal is rw;
 
 ## Override find with a subroutine that can find templates based off
 ## of whatever your needs are (multiple roots, extensions, etc.)
@@ -127,19 +132,17 @@ method parse (*%data) {
   }
 
   ## Okay, now let's parse the elements.
-  self!parse-element($.template.root, @!root-tal-tags);
+  self!parse-element($.template.root, @!root-tal-tags, False);
   return ~$.template;
 }
 
-## parse-elements, currently only does tal items.
-## metal will be added in the next major release.
-## i18n will be added at some point in the future.
+## parse-elements, parses TAL and METAL.
+## I18N may be added at some point in the future.
 ## also TODO: implement 'on-error'.
 method !parse-elements ($xml is rw) {
   ## Due to the strange nature of some rules, we're not using the
   ## 'elements' helper, nor using a nice 'for' loop. Instead we're doing this
   ## by hand. Don't worry, it'll all make sense.
-#  if ! $xml.nodes { return; }
   loop (my $i=0; True; $i++) {
     if $i == $xml.nodes.elems { last; }
     my $element = $xml.nodes[$i];
@@ -160,7 +163,15 @@ method !parse-elements ($xml is rw) {
   }
 }
 
-method !parse-element($element is rw, @tal-tags = @!tal-tags) {
+method !parse-element($element is rw, @tal-tags = @!tal-tags, $dometal=True) {
+## First we parse METAL tags, as long as $dometal is true.
+  if ($dometal) {
+    for @!metal-tags -> $metal {
+      my $tag = $!metal~':'~$metal;
+      self!parse-tag($element, $tag, $metal);
+    }
+  }
+## Now we parse TAL tags.
   for @tal-tags -> $tal {
     my $tag = $!tal~':'~$tal;
     self!parse-tag($element, $tag, $tal);
@@ -170,11 +181,6 @@ method !parse-element($element is rw, @tal-tags = @!tal-tags) {
   if ($element ~~ Exemel::Element && $element.name eq $!tal~':block') {
     $element = $element.nodes;
   }
-## Haven't figured out METAL stuff entirely yet.
-# for @metal -> $metal {
-#   my $tag = $!metal~':'~$metal;
-#   self!parse-tag($element, $tag, $metal);
-# }
 ## Now let's parse any child elements.
   if $element ~~ Exemel::Element {
     self!parse-elements($element);
@@ -267,6 +273,26 @@ method !parse-repeat ($xml is rw, $tag) {
   else {
     $xml = Nil;
   }
+}
+
+method !parse-define-macro ($xml is rw, $tag) {
+  my $macro = $xml.attribs{$tag};
+  $xml.unset: $tag;
+  my $section = $xml.deep-clone;
+  %!metal{$macro} = {
+    'xml' => $section,
+    #'slots' => [],    ## reserved for future use.
+  };
+}
+
+method !parse-use-macro ($xml is rw, $tag) {
+  my $macro = $xml.attribs{$tag};
+  ## In here we need to scan for fill-slot tags.
+  ## and save them into a cache.
+  if %!metal.exists($macro) {
+    $xml = %!metal{$macro}.deep-clone;
+  }
+  ## TODO: loading macros from other files.
 }
 
 method !parse-omit-tag ($xml is rw, $tag) {
