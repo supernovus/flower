@@ -449,7 +449,7 @@ method !lookup (@paths is copy, $data) {
         $found = ."$command"(|@args);
       }
       else {
-          warn "attempt to access an invalid item.";
+          warn "attempt to access an invalid item '$path'.";
       }
     }
   }

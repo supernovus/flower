@@ -1,0 +1,8 @@
+{
+  "name"        : "Flower",
+  "version"     : "*",
+  "description" : "Implementation of TAL and METAL template engines",
+  "depends"     : [ "Exemel", "DateTime::Utils" ],
+  "repo-type"   : "git",
+  "repo-url"    : "git://github.com/supernovus/flower.git"
+}
