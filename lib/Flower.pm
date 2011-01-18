@@ -20,8 +20,7 @@ has @!root-tal-tags = 'define', 'attributes', 'content';
 has @!tal-tags = 'define', 'condition', 'repeat', 'attributes', 'content', 'replace', 'omit-tag';
 
 ## the tags for METAL macro processing.
-## TODO: define-slot and use-slot.
-## ----  Most likely to be implemented in the specific handlers.
+## -- define-slot and use-slot are handled by use-macro.
 has @!metal-tags = 'define-macro', 'use-macro';
 
 ## The cache for METAL macros. Is available for modifiers.
@@ -106,6 +105,14 @@ method another (:$file, :$template) {
   return $new;
 }
 
+## Loading more XML documents.
+method load-xml-file ($filename) {
+  my $file = self.find($filename);
+  if ($file) {
+    return Exemel::Document.parse(slurp($file));
+  }
+}
+
 method !xml-ns ($ns) {
   return $ns.subst(/^xmlns\:/, '');
 }
@@ -139,7 +146,7 @@ method parse (*%data) {
 ## parse-elements, parses TAL and METAL.
 ## I18N may be added at some point in the future.
 ## also TODO: implement 'on-error'.
-method !parse-elements ($xml is rw) {
+method !parse-elements ($xml is rw, $custom-parser?) {
   ## Due to the strange nature of some rules, we're not using the
   ## 'elements' helper, nor using a nice 'for' loop. Instead we're doing this
   ## by hand. Don't worry, it'll all make sense.
@@ -148,7 +155,12 @@ method !parse-elements ($xml is rw) {
     my $element = $xml.nodes[$i];
     if $element !~~ Exemel::Element { next; } # skip non-elements.
     @.elements.unshift: $element; ## Stuff the newest element into place.
-    self!parse-element($element);
+    if ($custom-parser) {
+      $custom-parser($element, $custom-parser);
+    }
+    else {
+      self!parse-element($element);
+    }
     @.elements.shift; ## and remove it again.
     ## Now we clean up removed elements, and insert replacements.
     if ! defined $element {
@@ -279,20 +291,66 @@ method !parse-define-macro ($xml is rw, $tag) {
   my $macro = $xml.attribs{$tag};
   $xml.unset: $tag;
   my $section = $xml.deep-clone;
-  %!metal{$macro} = {
-    'xml' => $section,
-    #'slots' => [],    ## reserved for future use.
-  };
+  %!metal{$macro} = $section;
 }
 
 method !parse-use-macro ($xml is rw, $tag) {
   my $macro = $xml.attribs{$tag};
-  ## In here we need to scan for fill-slot tags.
-  ## and save them into a cache.
+  my $fillslot = $!metal~':fill-slot';
+  my @slots = $xml.elements(:RECURSE(10), $fillslot => True);
+  my $found = False;
   if %!metal.exists($macro) {
     $xml = %!metal{$macro}.deep-clone;
+    $found = True;
   }
-  ## TODO: loading macros from other files.
+  else {
+    my @ns = $macro.split('#', 2);
+    my $file = @ns[0];
+    my $section = @ns[1];
+    my $include = self.load-xml-file($file);
+    if ($include) {
+      my $defmacro = $!metal~':define-macro';
+      my @macros = $include.elements(:RECURSE(10), $defmacro => $section);
+      if (@macros.elems > 0) {
+        @macros[0].unset: %!metal
+        %!metal{$macro} = @macros[0].deep-clone;
+        $xml = @macros[0].deep-clone;
+        $found = True;
+      }
+    }
+  }
+  if ($found) {
+    my $parser = -> $element, $me {
+      self!parse-use-macro-slots(@slots, $element, $me);
+    };
+    self!parse-elements($xml, $parser);
+  }
+  else {
+    $xml.unset: $tag;
+    for @slots -> $slot {
+      $slot.unset: $fillslot;
+    }
+  }
+}
+
+method !parse-use-macro-slots (@slots, $xml is rw, $parser) {
+  my $defslot  = $!metal~':define-slot';
+  my $fillslot = $!metal~':fill-slot';
+  if $xml.attribs.exists($defslot) {
+    my $slotid = $xml.attribs{$defslot};
+    $xml.unset: $defslot;
+    for @slots -> $slot {
+      if $slot.attribs{$fillslot} eq $slotid {
+        $xml = $slot.deep-clone;
+        $xml.unset: $fillslot;
+        last;
+      }
+    }
+  }
+  ## Now let's parse any child elements.
+  if $xml ~~ Exemel::Element {
+    self!parse-elements($xml, $parser);
+  }
 }
 
 method !parse-omit-tag ($xml is rw, $tag) {

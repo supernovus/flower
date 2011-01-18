@@ -1,12 +1,8 @@
-Short Term (October 2010)
- - Finish implementing Flower::Utils, as per the README.
+Things yet to do (in the order they will likely be done in):
 
-Medium Term (December 2010)
- - Implement METAL support.
+ - Finish implementing Flower::Utils, as per the README.
  - Implement query caching.
  - Implement multiple paths (/test/path1 | /test/path2) support.
-
-Long Term (2011)
- - Implement I18N support.
  - Implement on-error.
+ - Implement I18N support.
 
