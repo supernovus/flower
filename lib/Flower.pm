@@ -26,6 +26,9 @@ has @!metal-tags = 'define-macro', 'use-macro';
 ## The cache for METAL macros. Is available for modifiers.
 has %.metal is rw;
 
+## The cache for included XML templates. Is available for modifiers.
+has %.file is rw;
+
 ## Override find with a subroutine that can find templates based off
 ## of whatever your needs are (multiple roots, extensions, etc.)
 has $!find;
@@ -106,10 +109,17 @@ method another (:$file, :$template) {
 }
 
 ## Loading more XML documents.
+## Now caches results, for easy re-use.
 method load-xml-file ($filename) {
-  my $file = self.find($filename);
+  if %.file.exists($filename) {
+    return %.file{$filename};
+  }
+
+  my $file = $!find($filename);
   if ($file) {
-    return Exemel::Document.parse(slurp($file));
+    my $xml = Exemel::Document.parse(slurp($file));
+    %.file{$filename} = $xml;
+    return $xml;
   }
 }
 
@@ -292,12 +302,17 @@ method !parse-define-macro ($xml is rw, $tag) {
   $xml.unset: $tag;
   my $section = $xml.deep-clone;
   %!metal{$macro} = $section;
+  #say "## Saved macro '$macro': $section";
 }
 
 method !parse-use-macro ($xml is rw, $tag) {
   my $macro = $xml.attribs{$tag};
   my $fillslot = $!metal~':fill-slot';
-  my @slots = $xml.elements(:RECURSE(10), $fillslot => True);
+  my %params = {
+    :RECURSE(10),
+    $fillslot => True,
+  };
+  my @slots = $xml.elements(|%params);
   my $found = False;
   if %!metal.exists($macro) {
     $xml = %!metal{$macro}.deep-clone;
@@ -310,17 +325,21 @@ method !parse-use-macro ($xml is rw, $tag) {
     my $include = self.load-xml-file($file);
     if ($include) {
       my $defmacro = $!metal~':define-macro';
-      my @macros = $include.elements(:RECURSE(10), $defmacro => $section);
+      my %search = {
+        :RECURSE(10),
+        $defmacro => $section,
+      };
+      my @macros = $include.root.elements(|%search);
       if (@macros.elems > 0) {
-        @macros[0].unset: %!metal
-        %!metal{$macro} = @macros[0].deep-clone;
         $xml = @macros[0].deep-clone;
+        $xml.unset: $defmacro;
+        %!metal{$macro} = $xml.deep-clone;
         $found = True;
       }
     }
   }
   if ($found) {
-    my $parser = -> $element, $me {
+    my $parser = -> $element is rw, $me {
       self!parse-use-macro-slots(@slots, $element, $me);
     };
     self!parse-elements($xml, $parser);
