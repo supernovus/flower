@@ -101,10 +101,15 @@ method new (:$find is copy, :$file, :$template is copy) {
 }
 
 ## A way to spawn another Flower using the same find and modifiers.
-method another (:$file, :$template) {
+method another (:$file, :$template, :$cache=True) {
   if ( ! $file && ! $template ) { die "a file or template must be specified."; }
   my $new = Flower.new(:$file, :$template, :find($!find));
   $new.add-modifiers(%!modifiers);
+  ## Add caches, for extra speedups.
+  if ($cache) {
+    $new.file  = %.file;
+    $new.metal = %.metal;
+  }
   return $new;
 }
 

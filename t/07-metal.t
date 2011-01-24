@@ -25,5 +25,5 @@ is $flower.parse(), $xml~'<test><zool>Hello, World.</zool></test>', 'metal:use-m
 
 $template = '<test><zed metal:use-macro="./t/metal/common.xml#slotty">A slotty test, <orb metal:fill-slot="booya">Yippie Kai Yay!</orb>.</zed></test>';
 $flower.=another(:template($template));
-is $flower.parse(), $xml~'<test><zarf>It is known, <orb>Yippie Kai Yay!</orb>, what do you think?</zarf></test>', 'metal:define-slot and metal:fill-slot';
+is $flower.parse(), $xml~'<test><zarf>It is known, <orb>Yippie Kai Yay!</orb> What do you think?</zarf></test>', 'metal:define-slot and metal:fill-slot';
 
