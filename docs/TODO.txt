@@ -1,8 +1,27 @@
 Things yet to do (in the order they will likely be done in):
 
+ - Massive rewrite! The original Flower was sort of based
+   on Petal from Perl 5. Sort of, but not really.
+   Since then, it's diverged quite significantly.
+   However, I have also started my own fork of the Perl 5
+   Template::TAL library, and really like the module way
+   that it is structured. I intend to completely restructure
+   Flower to be more modular like Template::TAL. The various
+   XML sublangs will be separated out into their own libraries,
+   the same way that 'modifiers' are done now.
+   The exact implementation details are not quite settled upon yet.
+   This will make Flower into an XML extension and manipulation framework
+   rather than just  an implementation of TAL/METAL/TALES,
+   although those will still be the default sub-langs.
+
  - Finish implementing Flower::Utils, as per the README.
- - Implement query caching.
+   Although they will no longer by in that namespace, as they will be
+   using the new framework described above.
+ - Implement query caching (it will be optional)
  - Implement multiple paths (/test/path1 | /test/path2) support.
  - Implement on-error.
- - Implement I18N support.
+
+Things not likely to be done by me (feel free to do them):
+
+  - The I18N sub-lang.
 
