@@ -1,7 +1,7 @@
 {
   "name"        : "Flower",
   "version"     : "*",
-  "description" : "Implementation of TAL and METAL template engines",
+  "description" : "XML Application Languages, including TAL.",
   "depends"     : [ "Exemel", "DateTime::Utils" ],
   "source-url"  : "git://github.com/supernovus/flower.git"
 }
