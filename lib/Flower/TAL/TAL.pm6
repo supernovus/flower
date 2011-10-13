@@ -1,12 +1,14 @@
-class Flower::TAL::TAL; ## The TAL XML Application Language
+#use Flower::Lang;
+class Flower::TAL::TAL; #does Flower::Lang; 
+
+## The TAL XML Application Language
 
 use Exemel;
 
 use Flower::TAL::TALES;  ## The TALES attribute sub-language.
 use Flower::TAL::Repeat; ## A class representing our repeat object.
 
-has $.flower; 
-has $.tag is rw = 'tal';    
+has $.default-tag = 'tal';  ## What to use if nothing is set.
 has $.ns = 'http://xml.zope.org/namespaces/tal';
 
 ## The full set of TAL attributes.
@@ -22,19 +24,34 @@ has @.handlers =
   'omit-tag'     => 'parse-omit',
   'block'        => { :element }; ## lazy <tal:block> extension from PHPTAL.
 
-## Needed by the spec, but unused here.
-has %.options;
-
 has $.tales;
 
-our submethod BUILD (:$flower) {
-  $!flower = $flower;
+## Common methods for Flower Languages.
+## This is in Flower::Lang role, but due to bugs with having
+## multiple classes using the same roles in Rakudo ng, I've simply
+## copied and pasted it. Oh, I can't wait until this works on "nom".
+
+has $.flower;
+has $.custom-tag is rw;
+has %.options;
+
+method tag {
+  if $.custom-tag.defined {
+    return $.custom-tag;
+  }
+  return $.default-tag;
+}
+
+## Normally we'd use submethod BUILD but in "ng" at least, it
+## completely wipes out our defaults in the "has" statements.
+## Boo, hiss. So now we have this lovely bit of magic instead.
+method init () {
   $!tales  = Flower::TAL::TALES.new(:parent(self));
 }
 
 ## This is super simple, as a <tal:block> acts the
 ## same as a normal element with a  tal:omit-tag="" rule.
-method parse_block ($element is rw, $name) {
+method parse-block ($element is rw, $name) {
   $element = $element.nodes;
 }
 
@@ -42,8 +59,8 @@ method parse-define ($xml is rw, $tag) {
   my @statements = $xml.attribs{$tag}.split(/\;\s+/);
   for @statements -> $statement {
     my ($attrib, $query) = $statement.split(/\s+/, 2);
-    my $val = self.query($query);
-    if defined $val { %.data{$attrib} = $val; }
+    my $val = $.tales.query($query);
+    if defined $val { $.flower.data{$attrib} = $val; }
   }
   $xml.unset($tag);
 }
@@ -94,24 +111,24 @@ method parse-repeat ($xml is rw, $tag) {
   my ($attrib, $query) = $xml.attribs{$tag}.split(/\s+/, 2);
   my $array = $.tales.query($query);
   if (defined $array && $array ~~ Array) {
-    if (! %.data.exists('repeat') || %.data<repeat> !~~ Hash) {
-      %.data<repeat> = {}; # Initialize the repeat hash.
+    if (! $.flower.data.exists('repeat') || $.flower.data<repeat> !~~ Hash) {
+      $.flower.data<repeat> = {}; # Initialize the repeat hash.
     }
     $xml.unset($tag);
     my @elements;
     my $count = 0;
     for @($array) -> $item {
       my $newxml = $xml.deep-clone;
-      %.data{$attrib} = $item;
+      $.flower.data{$attrib} = $item;
       my $repeat = Flower::TAL::Repeat.new(:index($count), :length($array.elems));
-      %.data<repeat>{$attrib} = $repeat;
+      $.flower.data<repeat>{$attrib} = $repeat;
       my $wrapper = Exemel::Element.new(:nodes(($newxml)));
-      self.parse-elements($wrapper);
+      $.flower.parse-elements($wrapper);
       @elements.push: @($wrapper.nodes);
       $count++;
     }
-    %.data<repeat>.delete($attrib);
-    %.data.delete($attrib);
+    $.flower.data<repeat>.delete($attrib);
+    $.flower.data.delete($attrib);
     $xml = @elements;
   }
   else {

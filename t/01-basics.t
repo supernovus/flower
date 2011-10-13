@@ -5,7 +5,7 @@ BEGIN { @*INC.unshift: './lib' }
 use Test;
 use Flower::TAL;
 
-plan 10;
+plan 9; ## from outer space.
 
 sub attrmake (*@opts) { @opts.join(' ') | @opts.reverse.join(' ') }
 
@@ -60,18 +60,4 @@ is ~$tal.parse($template, test=>'Hello World'), $xml~'<test xmlns:petal="http://
 
 $template = '<test tal:attributes="id id">Test document</test>';
 is ~$tal.parse($template, id=>'first'), $xml~'<test id="first">Test document</test>', 'attributes on root document';
-
-## test 10
-
-my @options = (
-  { value => 'a', label => 'Option 1' },
-  { value => 'b', label => 'Option 2', selected => 'selected' },
-  { value => 'c', label => 'Option 3' },
-);
-
-$template = '<select><option tal:repeat="option options" tal:attributes="value option/value; selected option/selected" tal:content="option/label"/></select>';
-
-$attrpos = attrmake 'value="b"', 'selected="selected"';
-
-is ~$tal.parse($template, options => @options), $xml~'<select><option value="a">Option 1</option><option '~$attrpos~'>Option 2</option><option value="c">Option 3</option></select>', 'attributes with undefined value';
 

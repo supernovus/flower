@@ -40,6 +40,9 @@ method !get-plugin ($plugin) {
   my $object = $plugin;
   if ! $plugin.defined {
     $object = $plugin.new(:flower(self));
+    if $object.can('init') {
+      $object.init();
+    }
   }
   return $object;
 }
@@ -55,10 +58,11 @@ multi method parse (Exemel::Document $template, *%data) {
     %rootattrs{$val} = $key; ## Yeah, we're reversing it.
   }
   for @.plugins -> $plugin {
+    $plugin.custom-tag = Nil;
     if %rootattrs.exists($plugin.ns) {
       my $tag = %rootattrs{$plugin.ns};
       $tag ~~ s/^xmlns\://;
-      $plugin.tag = $tag;
+      $plugin.custom-tag = $tag;
     }
   }
 
@@ -169,6 +173,7 @@ method parse-element($element is rw, :$safe) {
       }
       if ! $meth { next; } ## Undefined method, we can't handle that.
       my $fullname = $plugin.tag ~ ':' ~ $name;
+#      $*ERR.say: "-- Parsing $fullname tags";
       if $isel {
         if $element.name eq $fullname {
           $plugin."$meth"($element, $fullname);

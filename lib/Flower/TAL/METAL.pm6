@@ -1,9 +1,11 @@
-class Flower::TAL::METAL; ## The METAL XML Application Language.
+#use Flower::Lang;
+class Flower::TAL::METAL; # does Flower::Lang; 
+
+## The METAL XML Application Language.
 
 use Exemel;
 
-has $.flower;
-has $.tag is rw = 'metal';
+has $.default-tag = 'metal';
 has $.ns = 'http://xml.zope.org/namespaces/metal';
 
 ## The tags for METAL macro processing.
@@ -12,14 +14,27 @@ has @.handlers =
   'define-macro' => 'parse-define',
   'use-macro'    => 'parse-use';
 
-## Needed by the spec, but unused here.
-has %.options; 
-
 ## The cache for METAL macros.
 has %.metal is rw;
 
 ## The cache for included XML templates.
 has %.file is rw;
+
+## Common methods for Flower Languages.
+## This is in Flower::Lang role, but due to bugs with having
+## multiple classes using the same roles in Rakudo ng, I've simply
+## copied and pasted it. Oh, I can't wait until this works on "nom".
+
+has $.flower;
+has $.custom-tag is rw;
+has %.options;
+
+method tag {
+  if $.custom-tag.defined {
+    return $.custom-tag;
+  }
+  return $.default-tag;
+}
 
 ## Loading more XML documents.
 ## Now caches results, for easy re-use.
