@@ -43,7 +43,7 @@ method load-xml-file ($filename) {
     return %.file{$filename};
   }
 
-  my $file = $.flower.find($filename);
+  my $file = $.flower.find.($filename);
   if ($file) {
     my $xml = Exemel::Document.parse(slurp($file));
     %.file{$filename} = $xml;

@@ -3,7 +3,7 @@ class Flower::TAL::TALES::Text;
 has $.flower is rw;
 has $.tales  is rw;
 
-has %.modifiers =
+has %.handlers =
   'uppercase'  => 'text_uc',
   'upper'      => 'text_uc',
   'uc'         => 'text_uc',

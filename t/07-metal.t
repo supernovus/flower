@@ -12,8 +12,8 @@ my $xml = '<?xml version="1.0"?>';
 ## test 1, basic define and use.
 
 my $template = '<test><zool metal:define-macro="hello">Hello World</zool><zed metal:use-macro="hello">Goodbye Universe</zed></test>';
-my $tal = Flower.new();
-is ~$flower.parse($template), $xml~'<test><zool>Hello World</zool><zool>Hello World</zool></test>', 'metal:define-macro and metal:use-macro';
+my $tal = Flower::TAL.new();
+is ~$tal.parse($template), $xml~'<test><zool>Hello World</zool><zool>Hello World</zool></test>', 'metal:define-macro and metal:use-macro';
 
 ## test 2, using from an external file.
 

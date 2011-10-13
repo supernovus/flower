@@ -3,7 +3,7 @@ class Flower::TAL::TALES::List;
 has $.flower is rw;
 has $.tales  is rw;
 
-my %modifiers =
+has %.handlers =
   'group'     => 'list_group',
   'sort'      => 'list_sort',
   'reverse'   => 'list_reverse',

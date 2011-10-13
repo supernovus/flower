@@ -3,20 +3,20 @@
 BEGIN { @*INC.unshift: './lib' }
 
 use Test;
-use Flower;
+use Flower::TAL;
 
 plan 1;
 
 my $xml = '<?xml version="1.0"?>';
 
 my $template = '<test><dump tal:content="dump:object" tal:attributes="type what:object"/></test>';
-my $flower = Flower.new(:template($template));
+my $tal = Flower::TAL.new();
 
 my %ahash = {
   'anarray' => [ 'one', 'two', 'three' ],
 }
 
-$flower.load-modifiers('Debug');
+$tal.add-tales('Debug');
 
-is $flower.parse(object => %ahash), $xml~'<test><dump type="Hash">{"anarray" => ["one", "two", "three"]}</dump></test>', 'dump: and what: modifiers';
+is ~$tal.parse($template, object => %ahash), $xml~'<test><dump type="Hash">{"anarray" => ["one", "two", "three"]}</dump></test>', 'dump: and what: modifiers';
 

@@ -38,6 +38,7 @@ method add-plugin ($plugin) {
 #    $object = ::($plugname).new(:tales(self), :flower($.flower));
 ### So we use the evil workaround instead.
     eval("use $plugname; \$object = {$plugname}.new;"); ## EVIL!
+    if $object ~~ Str { die "Loading '$plugname' failed."; }
     $object.tales = self; ## More evil, $.tales should not be rw.
     $object.flower = $.flower; ## Yet more evil, $.flower should not be rw.
   }

@@ -53,17 +53,8 @@ multi method parse (Exemel::Document $template, *%data) {
   %.data = %data;
 
   ## Let's see if the namespaces has been renamed.
-  my %rootattrs;
-  for $template.root.attribs.kv -> $key, $val {
-    %rootattrs{$val} = $key; ## Yeah, we're reversing it.
-  }
   for @.plugins -> $plugin {
-    $plugin.custom-tag = Nil;
-    if %rootattrs.exists($plugin.ns) {
-      my $tag = %rootattrs{$plugin.ns};
-      $tag ~~ s/^xmlns\://;
-      $plugin.custom-tag = $tag;
-    }
+    $plugin.custom-tag = $template.root.nsPrefix($plugin.ns);
   }
 
   ## Okay, now let's parse the elements.
@@ -87,7 +78,7 @@ multi method parse (Stringy $template, *%data) {
 
 ## Parse a template using a filename. The filename is passed to find().
 method parse-file ($filename, *%data) {
-  my $file = $.find($filename);
+  my $file = $.find.($filename);
   if $file {
     my $template = Exemel::Document.parse(slurp($file));
     if $template {
