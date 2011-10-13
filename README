@@ -1,8 +1,9 @@
 === Flower -- Petal for Perl 6
 
-NOTE: A massive rewrite is planned for Flower that will vastly change how
-      it works, and what it's capable of. When it's done, Flower will be
-      a LOT more than what it is now. See doc/TODO.txt for more details.
+**** NOTE: This is the old version of Flower!
+**** It is no longer maintained, and is not supported at all.
+**** The new master branch is a complete refactoring of the codebase
+**** and is highly recommended over this obsolete version.
 
 Petal is the Perl Template Attribute Language (Perl 5), and is derived from the 
 TAL, METAL and TALES specifications from Zope (Python).
