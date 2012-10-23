@@ -1,4 +1,13 @@
-=== Flower: XML Application Languages ===
+# Flower: XML Application Languages
+
+## BIG IMPORTANT NOTE
+
+Flower is currently horribly broken and does not work, like at all.
+It's been unmaintained for a while and has suffered some bitrot.
+
+I am planning to get it back into a working shape again soon.
+
+## Introduction
 
 Flower is a library for building and using XML Application Languages.
 An XML Application Language can be anything that takes an XML document,
@@ -13,33 +22,14 @@ in further ideas from Template::TAL, PHPTAL, and some of my own custom XML
 concepts. The original TAL/METAL/TALES parsers are still included, and can
 be easily used by using Flower::TAL, which is included (see below.)
 
-= Requirements =
-
- - Rakudo Perl 6
-   http://rakudo.org/
-   NOTE: Unlike most of my libraries, Exemel and Flower only work on the
-   "ng" branch of Rakudo, and not the "nom" branch. Once grammars/regexes are
-   working fully in "nom", I'll make sure both libraries work on "nom" again.
-
- - Exemel
-   The XML library that powers Flower.
-   http://github.com/supernovus/exemel/
-
-= Optional libraries:
-
- - DateTime::Utils
-   Needed if you want to use Flower::TAL::TALES::Date
-   which is included in Flower::TAL's list of plugins.
-   http://github.com/supernovus/temporal-utils/
-
-=== Flower::TAL ===
+## Flower::TAL
 
 This is an easily loadable library that extends Flower and automatically
 loads the Flower::TAL::TAL, Flower::TAL::METAL application languages
 by default, and offers the ability to easily load plugins for the
 Flower::TAL::TALES attribute parser (used by Flower::TAL::TAL)
 
-= Major Differences from Petal =
+### Differences from Petal (also PHPTAL and Zope)
 
  * The default local namespace is 'tal', and to override it, you must
    declare http://xml.zope.org/namespaces/tal instead of the Petal namespace.
@@ -56,7 +46,7 @@ Flower::TAL::TALES attribute parser (used by Flower::TAL::TAL)
    the XML tree. Send an array of Exemel objects, and they will additionally
    be parsed for TAL statements.
  * Nested repeats cannot use the same attribute name, it will get clobbered.
- * The built-in repeat object is implemented as per the Zope/PHPTAL, not
+ * The built-in repeat object is implemented as per Zope and PHPTAL, not
    the Petal version. Note: it does not support the 'letter' or 'Letter' 
    attributes, but instead has some new methods that take paramters: 
      'every xx'   the number (not the index) is divisible by xx.
@@ -75,40 +65,47 @@ The above list will be updated as this project is developed, as I'm sure
 other changes will be introduced that will be a gotchya for users of Petal,
 Zope or PHPTAL.
 
-= Flower::TAL Plugins =
+### Flower::TAL Plugins
 
 Inspired by Petal::Utils, Flower includes a bunch of libraries in the
 Flower::TAL::TALES:: namespace. These are also available using Flower::TAL's
 add-tales() method.
 
-  - Text, same as the :text set from Petal::Utils
-    lc:      make the string lowercase.
-    uc:      make the string uppercase.
-    ucfirst: make the first letter of the string uppercase.
-    substr:  extract a portion of the string.
-    printf:  format a string or object in a specified way.
-  - List, similar to the :list set from Petal::Utils.
-    group:   turns a flat Array into a nested Array, where each inner 
-             Array has a set number of elements in it.
-    sort:    sort the array using the default sort algorithm.
-    limit:   only return the first number of items from the list.
-    shuffle: shuffle the list into a random order.
-    pick:    pick a set number of items randomly from the list.
-    reverse: reverse the contents of the list.
-  - Date, similar to the :date set from Petal::Utils, using on DateTime::Utils
-    date:     Builds a DateTime object using specified paramters.
-    time:     Builds a DateTime object from a Unix epoch.
-    strftime: Displays a date/time string in a specified format.
-    rfc:      A modifier specifically for use with strftime, as the format.
-    now:      A modifier specifically for use with strftime, as the object.
-  - Debug, similar to :debug set from Petal::Utils.
-    dump: modifier spits out the .perl representation of the object.
-    what: modifier spits out the class name of the object.
+  * Text, same as the :text set from Petal::Utils
+
+    * lc:      make the string lowercase.
+    * uc:      make the string uppercase.
+    * ucfirst: make the first letter of the string uppercase.
+    * substr:  extract a portion of the string.
+    * printf:  format a string or object in a specified way.
+
+  * List, similar to the :list set from Petal::Utils.
+
+    * group:   turns a flat Array into a nested Array, where each inner 
+               Array has a set number of elements in it.
+    * sort:    sort the array using the default sort algorithm.
+    * limit:   only return the first number of items from the list.
+    * shuffle: shuffle the list into a random order.
+    * pick:    pick a set number of items randomly from the list.
+    * reverse: reverse the contents of the list.
+
+  * Date, similar to the :date set from Petal::Utils, using on DateTime::Utils
+
+    * date:     Builds a DateTime object using specified paramters.
+    * time:     Builds a DateTime object from a Unix epoch.
+    * strftime: Displays a date/time string in a specified format.
+    * rfc:      A modifier specifically for use with strftime, as the format.
+    * now:      A modifier specifically for use with strftime, as the object.
+
+  * Debug, similar to :debug set from Petal::Utils.
+
+    * dump: modifier spits out the .perl representation of the object.
+    * what: modifier spits out the class name of the object.
 
 In addition, the following sets are planned for inclusion very soon:
 
-  - Logic, similar to the :logic set from Petal::Utils
-  - Hash, same as the :hash set from Petal::Utils
+  * Logic, similar to the :logic set from Petal::Utils
+  * Hash, same as the :hash set from Petal::Utils
 
 The syntax for the Flower::TAL plugins is based on the modifiers from
 Petal::Utils, but extended to use the Flower-specific extensions (the
@@ -125,14 +122,16 @@ The URI set from Petal::Utils is not planned for inclusion,
 feel free to write it if you need it.
 I'm sure new exciting libraries will be made adding onto these.
 
-=== Author ===
+## Requirements
 
-Timothy Totten
-http://huri.net/
-http://github.com/supernovus/
+ * [Exemel](http://github.com/supernovus/exemel/)
+ * [DateTime::Utils](http://github.com/supernovus/temporal-utils/)
 
-=== License === 
+## Author
 
-Artistic License 2.0
-http://www.perlfoundation.org/artistic_license_2_0
+Timothy Totten, supernovus on #perl6, https://github.com/supernovus/
+
+## License
+
+[Artistic License 2.0](http://www.perlfoundation.org/artistic_license_2_0)
 

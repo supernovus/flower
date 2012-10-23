@@ -3,7 +3,7 @@ class Flower::TAL::METAL; # does Flower::Lang;
 
 ## The METAL XML Application Language.
 
-use Exemel;
+use XML;
 
 has $.default-tag = 'metal';
 has $.ns = 'http://xml.zope.org/namespaces/metal';
@@ -45,7 +45,7 @@ method load-xml-file ($filename) {
 
   my $file = $.flower.find.($filename);
   if ($file) {
-    my $xml = Exemel::Document.parse(slurp($file));
+    my $xml = XML::Document.load($file);
     %.file{$filename} = $xml;
     return $xml;
   }
@@ -56,7 +56,7 @@ method load-xml-file ($filename) {
 method parse-define ($xml is rw, $tag) {
   my $macro = $xml.attribs{$tag};
   $xml.unset: $tag;
-  my $section = $xml.deep-clone;
+  my $section = $xml.cloneNode;
   %!metal{$macro} = $section;
   #say "## Saved macro '$macro': $section";
 }
@@ -71,7 +71,7 @@ method parse-use ($xml is rw, $tag) {
   my @slots = $xml.elements(|%params);
   my $found = False;
   if %!metal.exists($macro) {
-    $xml = %!metal{$macro}.deep-clone;
+    $xml = %!metal{$macro}.cloneNode;
     $found = True;
   }
   else {
@@ -87,9 +87,9 @@ method parse-use ($xml is rw, $tag) {
       };
       my @macros = $include.root.elements(|%search);
       if (@macros.elems > 0) {
-        $xml = @macros[0].deep-clone;
+        $xml = @macros[0].cloneNode;
         $xml.unset: $defmacro;
-        %!metal{$macro} = $xml.deep-clone;
+        %!metal{$macro} = $xml.cloneNode;
         $found = True;
       }
     }
@@ -117,14 +117,14 @@ method use-macro-slots (@slots, $xml is rw, $parser) {
     $xml.unset: $defslot;
     for @slots -> $slot {
       if $slot.attribs{$fillslot} eq $slotid {
-        $xml = $slot.deep-clone;
+        $xml = $slot.cloneNode;
         $xml.unset: $fillslot;
         last;
       }
     }
   }
   ## Now let's parse any child elements.
-  if $xml ~~ Exemel::Element {
+  if $xml ~~ XML::Element {
     $.flower.parse-elements($xml, $parser);
   }
 }

@@ -5,7 +5,7 @@
 ## for all modifiers in the DefaultModifiers set.
 
 BEGIN { 
-  @*INC.unshift: './lib';    ## Standard lib.
+  @*INC.push: './lib';       ## Standard lib.
   @*INC.unshift: './t/lib';  ## Test libraries.
 }
 

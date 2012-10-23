@@ -20,8 +20,10 @@ method lt     ($num) { $.number < $num      }
 method gt     ($num) { $.number > $num      }
 method eq     ($num) { $.number == $num     }
 method ne     ($num) { $.number != $num     }
+method gte    ($num) { $.number >= $num     }
+method lte    ($num) { $.number <= $num     }
 
 ## Versions of every and skip that also match on start.
 method repeat-every ($num) { $.start || $.every($num) }
-method repeat-skip  ($num) { $.start || $.every($num) }
+method repeat-skip  ($num) { $.start || $.skip($num)  }
 

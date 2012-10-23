@@ -1,6 +1,6 @@
 #!/usr/bin/env perl6
 
-BEGIN { @*INC.unshift: './lib' }
+BEGIN { @*INC.push: './lib' }
 
 use Test;
 use Flower::TAL;

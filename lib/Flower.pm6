@@ -1,6 +1,6 @@
 class Flower;
 
-use Exemel;
+use XML;
 
 ## Override find with a subroutine that can find templates based off
 ## of whatever your needs are (multiple roots, extensions, etc.)
@@ -47,8 +47,8 @@ method !get-plugin ($plugin) {
   return $object;
 }
 
-## The main method to parse a template. Expects an Exemel::Document.
-multi method parse (Exemel::Document $template, *%data) {
+## The main method to parse a template. Expects an XML::Document.
+multi method parse (XML::Document $template, *%data) {
   ## First we need to set the data, for later re-use.
   %.data = %data;
 
@@ -62,15 +62,15 @@ multi method parse (Exemel::Document $template, *%data) {
   return $template;
 }
 
-## Parse a template in Exemel::Element form.
-multi method parse (Exemel::Element $template, *%data) {
-  my $document = Exemel::Document.new(:root($template));
+## Parse a template in XML::Element form.
+multi method parse (XML::Element $template, *%data) {
+  my $document = XML::Document.new($template);
   return self.parse($document, |%data);
 }
 
 ## Parse a template that is passed as XML text.
 multi method parse (Stringy $template, *%data) {
-  my $document = Exemel::Document.parse($template);
+  my $document = XML::Document.new($template);
   if ($document) {
     return self.parse($document, |%data);
   }
@@ -80,7 +80,7 @@ multi method parse (Stringy $template, *%data) {
 method parse-file ($filename, *%data) {
   my $file = $.find.($filename);
   if $file {
-    my $template = Exemel::Document.parse(slurp($file));
+    my $template = XML::Document.load($file);
     if $template {
       return self.parse($template, |%data);
     }
@@ -95,7 +95,7 @@ method parse-elements ($xml is rw, $custom-parser?) {
   loop (my $i=0; True; $i++) {
     if $i == $xml.nodes.elems { last; }
     my $element = $xml.nodes[$i];
-    if $element !~~ Exemel::Element { next; } # skip non-elements.
+    if $element !~~ XML::Element { next; } # skip non-elements.
     @.elements.unshift: $element; ## Stuff the newest element into place.
     if ($custom-parser) {
       $custom-parser($element, $custom-parser);
@@ -175,12 +175,12 @@ method parse-element($element is rw, :$safe) {
           $plugin."$meth"($element, $fullname);
         }
       }
-      if $element !~~ Exemel::Element { last; } ## skip if we changed type.
+      if $element !~~ XML::Element { last; } ## skip if we changed type.
     } ## /for $plugin.handlers
   } ## /for @.plugins
 
   ## Okay, now we parse child elements.
-  if $element ~~ Exemel::Element {
+  if $element ~~ XML::Element {
     self.parse-elements($element);
   }
 }

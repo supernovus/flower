@@ -3,7 +3,7 @@ class Flower::TAL::TAL; #does Flower::Lang;
 
 ## The TAL XML Application Language
 
-use Exemel;
+use XML;
 
 use Flower::TAL::TALES;  ## The TALES attribute sub-language.
 use Flower::TAL::Repeat; ## A class representing our repeat object.
@@ -118,11 +118,11 @@ method parse-repeat ($xml is rw, $tag) {
     my @elements;
     my $count = 0;
     for @($array) -> $item {
-      my $newxml = $xml.deep-clone;
+      my $newxml = $xml.cloneNode;
       $.flower.data{$attrib} = $item;
       my $repeat = Flower::TAL::Repeat.new(:index($count), :length($array.elems));
       $.flower.data<repeat>{$attrib} = $repeat;
-      my $wrapper = Exemel::Element.new(:nodes(($newxml)));
+      my $wrapper = XML::Element.new(:nodes(($newxml)));
       $.flower.parse-elements($wrapper);
       @elements.push: @($wrapper.nodes);
       $count++;

@@ -1,6 +1,6 @@
 class Flower::TAL::TALES; ## Parses TALES strings, used by TAL.
 
-use Exemel;
+use XML;
 use Flower::TAL::TALES::Default; ## The default TALES parsers.
 
 has @!plugins;  ## Our private list of plugins. Use add-plugin() to add more.
@@ -10,7 +10,7 @@ has $.flower;   ## The top-most Flower object.
 our submethod BUILD (:$parent) {
   $!parent = $parent;
   $!flower = $parent.flower; 
-  my $default = Flower::TAL::TALES::Default.new(:tales(self), :$.flower);
+  my $default = Flower::TAL::TALES::Default.new(:tales(self), :$!flower);
   @!plugins = $default;
 }
 
@@ -96,16 +96,16 @@ method process-query($data is copy, :$forcexml, :$noxml, :$noescape, :$bool) {
     $data.=subst('>', '&gt;', :g);
     $data.=subst('"', '&quot;', :g);
   }
-  ## Default rule for forcexml converts non-XML objects into Exemel::Text.
+  ## Default rule for forcexml converts non-XML objects into XML::Text.
   if ($forcexml) {
     if ($data ~~ Array) {
       for @($data) -> $elm is rw {
-        if $elm !~~ Exemel { $elm = Exemel::Text.new(:text(~$elm)); }
+        if $elm !~~ XML { $elm = XML::Text.new(:text(~$elm)); }
       }
       return $data;
     }
-    elsif ($data !~~ Exemel) {
-      return Exemel::Text.new(:text(~$data));
+    elsif ($data !~~ XML) {
+      return XML::Text.new(:text(~$data));
     }
   }
   elsif ($noxml && $data !~~ Str|Numeric) {
