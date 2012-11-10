@@ -1,5 +1,5 @@
-#use Flower::Lang;
-class Flower::TAL::TAL; #does Flower::Lang; 
+use Flower::Lang;
+class Flower::TAL::TAL does Flower::Lang; 
 
 ## The TAL XML Application Language
 
@@ -25,22 +25,6 @@ has @.handlers =
   'block'        => { :element }; ## lazy <tal:block> extension from PHPTAL.
 
 has $.tales;
-
-## Common methods for Flower Languages.
-## This is in Flower::Lang role, but due to bugs with having
-## multiple classes using the same roles in Rakudo ng, I've simply
-## copied and pasted it. Oh, I can't wait until this works on "nom".
-
-has $.flower;
-has $.custom-tag is rw;
-has %.options;
-
-method tag {
-  if $.custom-tag.defined {
-    return $.custom-tag;
-  }
-  return $.default-tag;
-}
 
 ## Normally we'd use submethod BUILD but in "ng" at least, it
 ## completely wipes out our defaults in the "has" statements.
@@ -110,7 +94,7 @@ method parse-attrs ($xml is rw, $tag) {
 method parse-repeat ($xml is rw, $tag) { 
   my ($attrib, $query) = $xml.attribs{$tag}.split(/\s+/, 2);
   my $array = $.tales.query($query);
-  if (defined $array && $array ~~ Array) {
+  if $array.defined && $array ~~ Array {
     if (! $.flower.data.exists('repeat') || $.flower.data<repeat> !~~ Hash) {
       $.flower.data<repeat> = {}; # Initialize the repeat hash.
     }
@@ -122,7 +106,7 @@ method parse-repeat ($xml is rw, $tag) {
       $.flower.data{$attrib} = $item;
       my $repeat = Flower::TAL::Repeat.new(:index($count), :length($array.elems));
       $.flower.data<repeat>{$attrib} = $repeat;
-      my $wrapper = XML::Element.new(:nodes(($newxml)));
+      my $wrapper = XML::Element.new(:name<wrapper>, :nodes(($newxml)));
       $.flower.parse-elements($wrapper);
       @elements.push: @($wrapper.nodes);
       $count++;

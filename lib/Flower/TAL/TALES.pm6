@@ -88,9 +88,11 @@ method query ($query is copy, :$noxml, :$forcexml, :$bool, :$noescape is copy) {
 }
 
 ## Enforce processing rules for query().
-method process-query($data is copy, :$forcexml, :$noxml, :$noescape, :$bool) {
+method process-query($data is copy, :$forcexml, :$noxml, :$noescape, :$bool) 
+{
   ## First off, let's escape text, unless noescape is set.
-  if (!defined $noescape && $data ~~ Str) {
+  if (! $noescape && $data ~~ Str) 
+  {
     $data.=subst(/'&' [<!before \w+ ';'>]/, '&amp;', :g);
     $data.=subst('<', '&lt;', :g);
     $data.=subst('>', '&gt;', :g);

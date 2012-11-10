@@ -2,10 +2,19 @@ class Flower;
 
 use XML;
 
-## Override find with a subroutine that can find templates based off
-## of whatever your needs are (multiple roots, extensions, etc.)
-has $.find = sub ($file) {
-  if $file.IO ~~ :f { return $file }
+has $.provider handles <fetch store>;
+
+submethod BUILD (:$provider)
+{
+  if $provider
+  {
+    $!provider = $provider;
+  }
+  else
+  {
+    require Flower::Provider::File;
+    $!provider = ::('Flower::Provider::File').new;
+  }
 }
 
 ## Data, is used to store the replacement data. Is available for modifiers.
@@ -17,6 +26,12 @@ has @.elements;
 
 ## The XML application languages we support.
 has @.plugins;
+
+## This belongs in Provider.
+method add-path ($path)
+{
+  @.paths.push: $path;
+}
 
 ## Add an XML application language plugin.
 method add-plugin ($plugin) {
@@ -76,9 +91,9 @@ multi method parse (Stringy $template, *%data) {
   }
 }
 
-## Parse a template using a filename. The filename is passed to find().
-method parse-file ($filename, *%data) {
-  my $file = $.find.($filename);
+## Process a template using our Provider class.
+method process ($name, *%data) {
+  my $file = self.fetch($name);
   if $file {
     my $template = XML::Document.load($file);
     if $template {

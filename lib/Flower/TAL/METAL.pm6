@@ -1,5 +1,5 @@
-#use Flower::Lang;
-class Flower::TAL::METAL; # does Flower::Lang; 
+use Flower::Lang;
+class Flower::TAL::METAL does Flower::Lang; 
 
 ## The METAL XML Application Language.
 
@@ -20,22 +20,6 @@ has %.metal is rw;
 ## The cache for included XML templates.
 has %.file is rw;
 
-## Common methods for Flower Languages.
-## This is in Flower::Lang role, but due to bugs with having
-## multiple classes using the same roles in Rakudo ng, I've simply
-## copied and pasted it. Oh, I can't wait until this works on "nom".
-
-has $.flower;
-has $.custom-tag is rw;
-has %.options;
-
-method tag {
-  if $.custom-tag.defined {
-    return $.custom-tag;
-  }
-  return $.default-tag;
-}
-
 ## Loading more XML documents.
 ## Now caches results, for easy re-use.
 method load-xml-file ($filename) {
@@ -43,9 +27,9 @@ method load-xml-file ($filename) {
     return %.file{$filename};
   }
 
-  my $file = $.flower.find.($filename);
-  if ($file) {
-    my $xml = XML::Document.load($file);
+  my $xmltext = $.flower.fetch($filename);
+  if $xmltext {
+    my $xml = XML::Document.new($xmltext);
     %.file{$filename} = $xml;
     return $xml;
   }
