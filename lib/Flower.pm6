@@ -27,12 +27,6 @@ has @.elements;
 ## The XML application languages we support.
 has @.plugins;
 
-## This belongs in Provider.
-method add-path ($path)
-{
-  @.paths.push: $path;
-}
-
 ## Add an XML application language plugin.
 method add-plugin ($plugin) {
   my $object = self!get-plugin($plugin);
