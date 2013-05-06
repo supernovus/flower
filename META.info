@@ -2,6 +2,6 @@
   "name"        : "Flower",
   "version"     : "*",
   "description" : "XML Application Languages, including TAL.",
-  "depends"     : [ "XML", "DateTime::Utils" ],
+  "depends"     : [ "XML" ],
   "source-url"  : "git://github.com/supernovus/flower.git"
 }

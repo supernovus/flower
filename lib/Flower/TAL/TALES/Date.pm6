@@ -1,6 +1,7 @@
 class Flower::TAL::TALES::Date;
 
-use DateTime::Utils;
+use DateTime::Format;
+use DateTime::TimeZone;
 
 has $.flower is rw;
 has $.tales  is rw;
@@ -28,7 +29,7 @@ method date_new ($query, *%opts) {
   if defined $year {
     my $timezone = 0;
     if %params.exists('tz') && %params<tz> ~~ Str {
-      $timezone = iso-offset(%params<tz>);
+      $timezone = tz-offset(%params<tz>);
     }
     my $dt = DateTime.new(
         :year($year.Int), :month($month.Int), :day(+$day.Int), 
@@ -71,7 +72,7 @@ method date_format ($query, *%opts) {
     $.tales.get-args(:query, $query, DateTime.now(), Nil);
   if defined $format && defined $date {
     if defined $timezone {
-      $timezone = iso-offset($timezone);
+      $timezone = tz-offset($timezone);
     }
     my $return;
     if $date ~~ DateTime {
