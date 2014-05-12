@@ -95,7 +95,7 @@ method parse-repeat ($xml is rw, $tag) {
   my ($attrib, $query) = $xml.attribs{$tag}.split(/\s+/, 2);
   my $array = $.tales.query($query);
   if $array.defined && $array ~~ Array {
-    if (! $.flower.data.exists('repeat') || $.flower.data<repeat> !~~ Hash) {
+    if (! ($.flower.data<repeat>:exists) || $.flower.data<repeat> !~~ Hash) {
       $.flower.data<repeat> = {}; # Initialize the repeat hash.
     }
     $xml.unset($tag);
@@ -111,8 +111,8 @@ method parse-repeat ($xml is rw, $tag) {
       @elements.push: @($wrapper.nodes);
       $count++;
     }
-    $.flower.data<repeat>.delete($attrib);
-    $.flower.data.delete($attrib);
+    $.flower.data<repeat>{$attrib}:delete;
+    $.flower.data{$attrib}:delete;
     $xml = @elements;
   }
   else {

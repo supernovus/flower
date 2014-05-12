@@ -23,7 +23,7 @@ method add-path ($path)
 
 method fetch ($name) 
 {
-  if %.templates.exists($name) 
+  if %.templates{$name}:exists 
   {
     return %.templates{$name};
   }

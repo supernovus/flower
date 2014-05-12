@@ -6,7 +6,7 @@ class Flower::TAL is Flower;
 use Flower::TAL::TAL;
 use Flower::TAL::METAL;
 
-our submethod BUILD () {
+submethod BUILD () {
   self.add-plugin(Flower::TAL::METAL); ## We parse METAL first.
   self.add-plugin(Flower::TAL::TAL);   ## Then we parse TAL.
 }
