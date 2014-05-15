@@ -7,7 +7,7 @@ has @!plugins;  ## Our private list of plugins. Use add-plugin() to add more.
 has $.parent;   ## The XML Lang that called us. Probably Flower::TAL::TAL
 has $.flower;   ## The top-most Flower object.
 
-our submethod BUILD (:$parent) {
+submethod BUILD (:$parent) {
   $!parent = $parent;
   $!flower = $parent.flower; 
   my $default = Flower::TAL::TALES::Default.new(:tales(self), :$!flower);
@@ -37,7 +37,7 @@ method add-plugin ($plugin) {
 #    require $plugname;
 #    $object = ::($plugname).new(:tales(self), :flower($.flower));
 ### So we use the evil workaround instead.
-    eval("use $plugname; \$object = {$plugname}.new;"); ## EVIL!
+    EVAL("use $plugname; \$object = {$plugname}.new;"); ## EVIL!
     if $object ~~ Str { die "Loading '$plugname' failed."; }
     $object.tales = self; ## More evil, $.tales should not be rw.
     $object.flower = $.flower; ## Yet more evil, $.flower should not be rw.
@@ -75,7 +75,7 @@ method query ($query is copy, :$noxml, :$forcexml, :$bool, :$noescape is copy) {
   if $query ~~ /^<.ident>+\:/ {
     my ($handler, $subquery) = $query.split(/\:\s*/, 2);
     for @!plugins -> $plugin {
-      if $plugin.handlers.exists($handler) {
+      if $plugin.handlers{$handler} :exists {
         my $method = $plugin.handlers{$handler};
         ## Modifiers are responsible for subqueries and process-query calls.
         return $plugin."$method"($subquery, :$noxml, :$forcexml, :$bool, :$noescape);
@@ -174,10 +174,10 @@ method get-args($string, :$query, :$named, *@defaults) {
 
 method !parse-rules ($rules, $tag, $value) {
   my $stringy = False;
-  if $rules ~~ Hash && $rules.exists('.STRING') {
+  if $rules ~~ Hash && ($rules{'.STRING'} :exists) {
     $stringy = True;
   }
-  if $rules ~~ Hash && $rules.exists($tag) {
+  if $rules ~~ Hash && ($rules{$tag}:exists) {
     if $rules{$tag} {
       if $stringy {
         return self.query($value);
@@ -210,7 +210,7 @@ method !lookup (@paths is copy, $data) {
   my $found;
   given $data {
     when Hash {
-      if $data.exists($path) {
+      if $data{$path} :exists {
         $found = .{$path};
       }
     }

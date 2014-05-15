@@ -31,7 +31,7 @@ method text_lc ($query, *%opts) {
 ## Usage:  ucfirst: varname
 method text_ucfirst ($query, *%opts) {
   my $result = $.tales.query($query);
-  return $.tales.process-query($result.ucfirst, |%opts);
+  return $.tales.process-query($result.tc, |%opts);
 }
 
 ## Usage:  substr: opts string/variable

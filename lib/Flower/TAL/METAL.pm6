@@ -23,7 +23,7 @@ has %.file is rw;
 ## Loading more XML documents.
 ## Now caches results, for easy re-use.
 method load-xml-file ($filename) {
-  if %.file.exists($filename) {
+  if %.file{$filename}:exists {
     return %.file{$filename};
   }
 
@@ -54,7 +54,7 @@ method parse-use ($xml is rw, $tag) {
   };
   my @slots = $xml.elements(|%params);
   my $found = False;
-  if %!metal.exists($macro) {
+  if %!metal{$macro}:exists {
     $xml = %!metal{$macro}.cloneNode;
     $found = True;
   }
@@ -96,7 +96,7 @@ method parse-use ($xml is rw, $tag) {
 method use-macro-slots (@slots, $xml is rw, $parser) {
   my $defslot  = $.tag~':define-slot';
   my $fillslot = $.tag~':fill-slot';
-  if $xml.attribs.exists($defslot) {
+  if $xml.attribs{$defslot}:exists {
     my $slotid = $xml.attribs{$defslot};
     $xml.unset: $defslot;
     for @slots -> $slot {

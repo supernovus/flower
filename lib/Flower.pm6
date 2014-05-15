@@ -132,7 +132,7 @@ method parse-element($element is rw, :$safe) {
   for @.plugins -> $plugin {
     ## First attributes.
     my $defel = False; ## By default we handle XML Attributes, not Elements.
-    if $plugin.options.exists('element') {
+    if $plugin.options<element> :exists {
       $defel = $plugin.options<element>;
     }
     for $plugin.handlers -> $hand {
@@ -144,13 +144,13 @@ method parse-element($element is rw, :$safe) {
         $name  = $hand.key;
         my $rules = $hand.value;
         if $rules ~~ Hash {
-          if $rules.exists('method') {
+          if $rules<method> :exists {
             $meth = $rules<method>;
           }
-          if $rules.exists('safe') {
+          if $rules<safe> :exists {
             $issafe = $rules<safe>;
           }
-          if $rules.exists('element') {
+          if $rules<element> :exists {
             $isel = $rules<element>;
           }
         }
@@ -180,7 +180,7 @@ method parse-element($element is rw, :$safe) {
         }
       }
       else {
-        if $element.attribs.exists($fullname) {
+        if $element.attribs{$fullname} :exists {
           $plugin."$meth"($element, $fullname);
         }
       }
