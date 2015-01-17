@@ -12,9 +12,9 @@ my $xml = '<?xml version="1.0"?>';
 my $template = '<test><dump tal:content="dump:object" tal:attributes="type what:object"/></test>';
 my $tal = Flower::TAL.new();
 
-my %ahash = {
+my %ahash = %( {
   'anarray' => [ 'one', 'two', 'three' ],
-}
+});
 
 $tal.add-tales('Debug');
 
