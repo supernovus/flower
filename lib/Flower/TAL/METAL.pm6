@@ -48,10 +48,10 @@ method parse-define ($xml is rw, $tag) {
 method parse-use ($xml is rw, $tag) {
   my $macro = $xml.attribs{$tag};
   my $fillslot = $.tag~':fill-slot';
-  my %params = {
+  my %params =%( {
     :RECURSE(10),
     $fillslot => True,
-  };
+  });
   my @slots = $xml.elements(|%params);
   my $found = False;
   if %!metal{$macro}:exists {
@@ -65,10 +65,10 @@ method parse-use ($xml is rw, $tag) {
     my $include = self.load-xml-file($file);
     if ($include) {
       my $defmacro = $.tag~':define-macro';
-      my %search = {
+      my %search =%( {
         :RECURSE(10),
         $defmacro => $section,
-      };
+      });
       my @macros = $include.root.elements(|%search);
       if (@macros.elems > 0) {
         $xml = @macros[0].cloneNode;
