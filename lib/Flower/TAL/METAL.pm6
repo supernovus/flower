@@ -1,5 +1,5 @@
 use Flower::Lang;
-class Flower::TAL::METAL does Flower::Lang; 
+unit class Flower::TAL::METAL does Flower::Lang; 
 
 ## The METAL XML Application Language.
 
@@ -37,7 +37,7 @@ method load-xml-file ($filename) {
 
 ## Now the handlers.
 
-method parse-define ($xml is rw, $tag) {
+method parse-define ($xml, $tag) {
   my $macro = $xml.attribs{$tag};
   $xml.unset: $tag;
   my $section = $xml.cloneNode;
@@ -45,7 +45,7 @@ method parse-define ($xml is rw, $tag) {
   #say "## Saved macro '$macro': $section";
 }
 
-method parse-use ($xml is rw, $tag) {
+method parse-use ($xml, $tag) {
   my $macro = $xml.attribs{$tag};
   my $fillslot = $.tag~':fill-slot';
   my %params =%( {
@@ -93,7 +93,7 @@ method parse-use ($xml is rw, $tag) {
   }
 }
 
-method use-macro-slots (@slots, $xml is rw, $parser) {
+method use-macro-slots (@slots, $xml, $parser) {
   my $defslot  = $.tag~':define-slot';
   my $fillslot = $.tag~':fill-slot';
   if $xml.attribs{$defslot}:exists {

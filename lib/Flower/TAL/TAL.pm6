@@ -1,5 +1,5 @@
 use Flower::Lang;
-class Flower::TAL::TAL does Flower::Lang; 
+unit class Flower::TAL::TAL does Flower::Lang; 
 
 ## The TAL XML Application Language
 
@@ -35,11 +35,11 @@ method init () {
 
 ## This is super simple, as a <tal:block> acts the
 ## same as a normal element with a  tal:omit-tag="" rule.
-method parse-block ($element is rw, $name) {
+method parse-block ($element, $name) {
   $element = $element.nodes;
 }
 
-method parse-define ($xml is rw, $tag) {
+method parse-define ($xml, $tag) {
   my @statements = $xml.attribs{$tag}.split(/\;\s+/);
   for @statements -> $statement {
     my ($attrib, $query) = $statement.split(/\s+/, 2);
@@ -49,7 +49,7 @@ method parse-define ($xml is rw, $tag) {
   $xml.unset($tag);
 }
 
-method parse-condition ($xml is rw, $tag) {
+method parse-condition ($xml, $tag) {
   if $.tales.query($xml.attribs{$tag}, :bool) {
     $xml.unset($tag);
   } else {
@@ -57,7 +57,7 @@ method parse-condition ($xml is rw, $tag) {
   }
 }
 
-method parse-content ($xml is rw, $tag) {
+method parse-content ($xml, $tag) {
   my $node = $.tales.query($xml.attribs{$tag}, :forcexml);
   if defined $node {
     if $node === $xml.nodes {} # special case for 'default'.
@@ -79,7 +79,7 @@ method parse-replace ($xml is rw, $tag) {
   }
 }
 
-method parse-attrs ($xml is rw, $tag) {
+method parse-attrs ($xml, $tag) {
   my @statements = $xml.attribs{$tag}.split(/\;\s+/);
   for @statements -> $statement {
     my ($attrib, $query) = $statement.split(/\s+/, 2);
@@ -91,7 +91,7 @@ method parse-attrs ($xml is rw, $tag) {
   $xml.unset: $tag;
 }
 
-method parse-repeat ($xml is rw, $tag) { 
+method parse-repeat ($xml, $tag) { 
   my ($attrib, $query) = $xml.attribs{$tag}.split(/\s+/, 2);
   my $array = $.tales.query($query);
   if $array.defined && $array ~~ Array {
@@ -120,7 +120,7 @@ method parse-repeat ($xml is rw, $tag) {
   }
 }
 
-method parse-omit ($xml is rw, $tag) {
+method parse-omit ($xml, $tag) {
   my $nodes = $xml.nodes;
   my $query = $xml.attribs{$tag};
   if $.tales.query($query, :bool) {
