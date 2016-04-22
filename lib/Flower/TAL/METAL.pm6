@@ -45,7 +45,7 @@ method parse-define ($xml is raw, $tag) {
   #say "## Saved macro '$macro': $section";
 }
 
-method parse-use ($xml, $tag) {
+method parse-use ($xml is raw, $tag) {
   my $macro = $xml.attribs{$tag};
   my $fillslot = $.tag~':fill-slot';
   my %params =%( {
