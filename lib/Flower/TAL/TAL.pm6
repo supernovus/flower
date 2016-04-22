@@ -35,7 +35,7 @@ method init () {
 
 ## This is super simple, as a <tal:block> acts the
 ## same as a normal element with a  tal:omit-tag="" rule.
-method parse-block ($element, $name) {
+method parse-block ($element is raw, $name) {
   $element = $element.nodes;
 }
 
@@ -49,7 +49,7 @@ method parse-define ($xml, $tag) {
   $xml.unset($tag);
 }
 
-method parse-condition ($xml, $tag) {
+method parse-condition ($xml is raw, $tag) {
   if $.tales.query($xml.attribs{$tag}, :bool) {
     $xml.unset($tag);
   } else {
@@ -69,7 +69,7 @@ method parse-content ($xml, $tag) {
   $xml.unset: $tag;
 }
 
-method parse-replace ($xml is rw, $tag) {
+method parse-replace ($xml is raw, $tag) {
   my $text = $xml.attribs{$tag};
   if defined $text {
     $xml = $.tales.query($text, :forcexml); 
@@ -91,7 +91,7 @@ method parse-attrs ($xml, $tag) {
   $xml.unset: $tag;
 }
 
-method parse-repeat ($xml, $tag) { 
+method parse-repeat ($xml is raw, $tag) { 
   my ($attrib, $query) = $xml.attribs{$tag}.split(/\s+/, 2);
   my $array = $.tales.query($query);
   if $array.defined && $array ~~ Array {
@@ -120,7 +120,7 @@ method parse-repeat ($xml, $tag) {
   }
 }
 
-method parse-omit ($xml, $tag) {
+method parse-omit ($xml is raw, $tag) {
   my $nodes = $xml.nodes;
   my $query = $xml.attribs{$tag};
   if $.tales.query($query, :bool) {

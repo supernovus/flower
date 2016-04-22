@@ -37,7 +37,7 @@ method load-xml-file ($filename) {
 
 ## Now the handlers.
 
-method parse-define ($xml, $tag) {
+method parse-define ($xml is raw, $tag) {
   my $macro = $xml.attribs{$tag};
   $xml.unset: $tag;
   my $section = $xml.cloneNode;
@@ -93,7 +93,7 @@ method parse-use ($xml, $tag) {
   }
 }
 
-method use-macro-slots (@slots, $xml, $parser) {
+method use-macro-slots (@slots, $xml is raw, $parser) {
   my $defslot  = $.tag~':define-slot';
   my $fillslot = $.tag~':fill-slot';
   if $xml.attribs{$defslot}:exists {
